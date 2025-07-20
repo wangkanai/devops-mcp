@@ -1,0 +1,36 @@
+{
+  "name": "azure-devops-mcp-proxy",
+  "version": "1.0.0",
+  "description": "Dynamic Azure DevOps MCP Proxy Server for directory-based environment switching",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "type-check": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wangkanai/azure-devops-mcp-proxy.git"
+  },
+  "keywords": ["mcp", "azure-devops", "proxy", "dynamic", "environment", "switching"],
+  "author": "Sarin Na Wangkanai",
+  "license": "MIT",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/wangkanai/azure-devops-mcp-proxy/issues"
+  },
+  "homepage": "https://github.com/wangkanai/azure-devops-mcp-proxy#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.16.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.15",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
