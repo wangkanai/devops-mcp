@@ -156,41 +156,57 @@ The server uses intelligent directory detection:
 4. **Parent Directory Search**: Searches up the directory tree for matches
 5. **Fallback Configuration**: Uses default configuration when no match found
 
-## Configuration File
+## Local Configuration
 
-Configuration is stored in `config/environments.json`:
+Each repository should contain a `.azure-devops.json` configuration file:
 
+### Configuration File Structure
 ```json
 {
-  "mappings": [
-    {
-      "directory": "/Users/wangkanai/Sources/riversync",
-      "config": {
-        "organizationUrl": "https://dev.azure.com/riversync",
-        "pat": "YOUR_RIVERSYNC_PAT_TOKEN",
-        "project": "RiverSync"
-      }
-    },
-    {
-      "directory": "/Users/wangkanai/Sources/mula",
-      "config": {
-        "organizationUrl": "https://dev.azure.com/mula-x",
-        "pat": "YOUR_MULA_PAT_TOKEN",
-        "project": "mula"
-      }
-    }
-  ],
-  "defaultConfig": {
-    "organizationUrl": "https://dev.azure.com/default",
-    "pat": "DEFAULT_PAT_TOKEN",
-    "project": "DefaultProject"
+  "organizationUrl": "https://dev.azure.com/your-org",
+  "project": "YourProject",
+  "pat": "your-pat-token-here",
+  "description": "Azure DevOps configuration for this repository",
+  "settings": {
+    "timeout": 30000,
+    "retries": 3,
+    "apiVersion": "7.1"
+  },
+  "tools": {
+    "workItems": true,
+    "repositories": true,
+    "builds": true,
+    "pullRequests": true,
+    "pipelines": true
+  },
+  "meta": {
+    "configVersion": "1.0",
+    "lastUpdated": "2025-07-21",
+    "createdBy": "azure-devops-mcp-proxy"
   }
 }
 ```
 
+### Security Configuration
+**Important**: Add `.azure-devops.json` to your `.gitignore` file:
+```gitignore
+# Azure DevOps MCP local configuration (contains PAT tokens)
+.azure-devops.json
+```
+
+### Example Projects
+
+#### RiverSync Project
+- **Directory**: `/Users/wangkanai/Sources/riversync`
+- **Configuration**: `.azure-devops.json` with RiverSync organization settings
+
+#### Mula Project
+- **Directory**: `/Users/wangkanai/Sources/mula`
+- **Configuration**: `.azure-devops.json` with Mula organization settings
+
 ## Authentication
 
-The server uses Personal Access Tokens (PAT) for Azure DevOps authentication. PAT tokens are configured per project in the environments.json file.
+The server uses Personal Access Tokens (PAT) for Azure DevOps authentication. PAT tokens are configured per project in local `.azure-devops.json` configuration files within each repository.
 
 ### PAT Token Requirements
 
@@ -209,15 +225,107 @@ The server includes comprehensive error handling:
 - **API Errors**: Detailed error reporting for Azure DevOps API issues
 - **Network Errors**: Retry logic and timeout handling
 
-## Testing
+## Testing & Validation
 
-Run the test script to verify server functionality:
+### Enhanced Validation System (Recommended)
 
+The enhanced validation system includes MCP server startup, connection verification, and readiness checks:
+
+#### 1. MCP Server Warmup
 ```bash
-# Build and test the server
+# Prepare MCP servers for validation
+./warmup-mcp.sh
+
+# Use custom configuration file
+./warmup-mcp.sh custom-config.json
+```
+
+#### 2. Enhanced Comprehensive Validation
+```bash
+# Full validation with MCP server initialization
+./validate-enhanced.sh
+
+# Skip interactive Claude tests (faster)
+./validate-enhanced.sh --skip-interactive
+
+# Extended warmup for slow systems
+./validate-enhanced.sh --warmup 20
+
+# Test only specific repositories
+./validate-enhanced.sh --repos "RiverSync,Mula"
+
+# Use custom configuration file
+./validate-enhanced.sh --config custom-config.json
+
+# Show all options
+./validate-enhanced.sh --help
+```
+
+#### 3. Manual Testing
+```bash
+# Build and test the server manually
 npm run build
 node test-server.js
 ```
+
+### Configuration File
+
+The generic validation system uses `validation-config.json`:
+
+```json
+{
+  "proxyPath": "/Users/wangkanai/Sources/azure-devops-mcp-proxy",
+  "repositories": [
+    {
+      "name": "RiverSync",
+      "path": "/Users/wangkanai/Sources/riversync",
+      "expectedOrganization": "riversync",
+      "organizationUrl": "https://dev.azure.com/riversync",
+      "project": "RiverSync",
+      "enabled": true
+    }
+  ],
+  "testSettings": {
+    "timeoutSeconds": 30,
+    "skipInteractive": false,
+    "mcpServerName": "azure-devops-proxy",
+    "configFileName": ".azure-devops.json"
+  },
+  "expectedTools": ["workItems", "repositories", "builds", "pullRequests", "pipelines"]
+}
+```
+
+### Enhanced Validation Features
+
+The enhanced validation system includes:
+
+#### **🚀 MCP Server Management**
+- **Startup Verification**: Ensures MCP servers are properly configured
+- **Connection Testing**: Verifies server connectivity with retry logic
+- **Readiness Checks**: Confirms servers respond to basic commands
+- **Warmup Period**: Configurable delay for server initialization (default: 10s)
+
+#### **🔍 Comprehensive Testing Coverage**
+- ✅ **Prerequisites**: PowerShell, Claude Code, directory structure, proxy build
+- ✅ **MCP Initialization**: Server startup, connectivity, and readiness verification
+- ✅ **Local Configuration**: `.azure-devops.json` file validation with expected values
+- ✅ **Server Configuration**: Local scope verification without environment variables
+- ✅ **Claude Integration**: MCP command execution and context detection
+- ✅ **Dynamic Switching**: Environment switching between multiple repositories
+- ✅ **Error Handling**: Comprehensive error detection and reporting with retry logic
+
+### Expected Results
+
+**Full Validation Results:**
+- Pass Rate: >90% for successful implementation
+- All MCP commands functional in both repositories
+- Automatic context switching based on directory location
+
+## Legacy Environment Configuration (Deprecated)
+
+The server previously supported a global `config/environments.json` file for environment mapping. This approach has been **deprecated** in favor of local `.azure-devops.json` configuration files for better security and project isolation.
+
+If you need to migrate from the old environment-based configuration, convert your settings to local configuration files in each repository.
 
 ## Architecture
 
@@ -256,10 +364,10 @@ This MCP server is designed to work seamlessly with Claude Code for Azure DevOps
 
 ### Common Issues
 
-1. **Configuration Not Found**: Ensure `config/environments.json` exists and is valid
-2. **Authentication Errors**: Verify PAT token permissions and expiration
-3. **Directory Detection**: Check that you're in a configured project directory
-4. **API Errors**: Verify Azure DevOps organization and project names
+1. **Configuration Not Found**: Ensure `.azure-devops.json` exists in your project directory
+2. **Authentication Errors**: Verify PAT token permissions and expiration in your local configuration
+3. **Directory Detection**: Check that your project has a valid `.azure-devops.json` file
+4. **API Errors**: Verify Azure DevOps organization and project names in your local configuration
 
 ### Debug Mode
 

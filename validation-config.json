@@ -1,0 +1,35 @@
+{
+  "proxyPath": "/Users/wangkanai/Sources/azure-devops-mcp-proxy",
+  "repositories": [
+    {
+      "name": "RiverSync",
+      "path": "/Users/wangkanai/Sources/riversync",
+      "expectedOrganization": "riversync",
+      "organizationUrl": "https://dev.azure.com/riversync",
+      "project": "RiverSync",
+      "enabled": true
+    },
+    {
+      "name": "Mula",
+      "path": "/Users/wangkanai/Sources/mula", 
+      "expectedOrganization": "mula-x",
+      "organizationUrl": "https://dev.azure.com/mula-x",
+      "project": "mula",
+      "enabled": true
+    }
+  ],
+  "testSettings": {
+    "timeoutSeconds": 30,
+    "skipInteractive": false,
+    "verbose": false,
+    "mcpServerName": "azure-devops-proxy",
+    "configFileName": ".azure-devops.json"
+  },
+  "expectedTools": [
+    "workItems",
+    "repositories", 
+    "builds",
+    "pullRequests",
+    "pipelines"
+  ]
+}
