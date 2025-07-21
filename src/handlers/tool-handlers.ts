@@ -47,11 +47,13 @@ export class ToolHandlers {
           throw new Error(`Unknown tool: ${name}`);
       }
     } catch (error) {
-      console.error(`Error in tool handler ${name}:`, error);
+      // Sanitize tool name to prevent log injection
+      const sanitizedName = typeof name === 'string' ? name.replace(/[\r\n\t]/g, '_') : 'unknown';
+      console.error(`Error in tool handler ${sanitizedName}:`, error instanceof Error ? error.message : 'Unknown error');
       return {
         content: [{
           type: 'text',
-          text: `Error executing ${name}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          text: `Error executing ${sanitizedName}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         }],
         isError: true,
       };
@@ -493,7 +495,9 @@ export class ToolHandlers {
           try {
             timeline = await this.makeApiRequest(`/build/builds/${args.buildId}/timeline?api-version=7.1`);
           } catch (timelineError) {
-            console.error('Failed to get timeline:', timelineError);
+            // Sanitize error message to prevent log injection
+            const sanitizedError = timelineError instanceof Error ? timelineError.message.replace(/[\r\n\t]/g, '_') : 'Unknown timeline error';
+            console.error('Failed to get timeline:', sanitizedError);
             // Continue without timeline if it fails
           }
         }

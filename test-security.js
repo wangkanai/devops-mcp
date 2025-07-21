@@ -9,9 +9,11 @@ console.log('Testing PAT Token Security and Configuration Isolation (Local Confi
 console.log('🔐 Test 1: Local configuration security validation');
 try {
   const currentConfigPath = './.azure-devops.json';
-  if (fs.existsSync(currentConfigPath)) {
+  // Direct file access without existsSync to avoid race conditions
+  try {
     const stats = fs.statSync(currentConfigPath);
-    const config = JSON.parse(fs.readFileSync(currentConfigPath, 'utf8'));
+    const content = fs.readFileSync(currentConfigPath, 'utf8');
+    const config = JSON.parse(content);
     
     console.log('  ✅ Configuration file found and readable');
     console.log(`    File size: ${stats.size} bytes`);
@@ -24,8 +26,12 @@ try {
     } else {
       console.log('  ⚠️  PAT token missing or too short');
     }
-  } else {
-    console.log('  ❌ No configuration file found in current directory');
+  } catch (readError) {
+    if (readError.code === 'ENOENT') {
+      console.log('  ❌ No configuration file found in current directory');
+    } else {
+      console.log(`  ❌ Configuration security error: ${readError.message}`);
+    }
   }
 } catch (error) {
   console.log(`  ❌ Configuration security error: ${error.message}`);
@@ -35,7 +41,8 @@ try {
 console.log('\n🔐 Test 2: Git ignore security validation');
 try {
   const gitignorePath = './.gitignore';
-  if (fs.existsSync(gitignorePath)) {
+  // Direct file access without existsSync to avoid race conditions
+  try {
     const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
     
     if (gitignoreContent.includes('.azure-devops.json')) {
@@ -47,8 +54,12 @@ try {
     if (gitignoreContent.includes('environments.json')) {
       console.log('  ✅ Legacy environments.json is also excluded');
     }
-  } else {
-    console.log('  ❌ No .gitignore file found');
+  } catch (readError) {
+    if (readError.code === 'ENOENT') {
+      console.log('  ❌ No .gitignore file found');
+    } else {
+      console.log(`  ❌ Git ignore check error: ${readError.message}`);
+    }
   }
 } catch (error) {
   console.log(`  ❌ Git ignore check error: ${error.message}`);
@@ -97,15 +108,17 @@ const testDirs = [
 
 testDirs.forEach(dir => {
   const configPath = path.join(dir, '.azure-devops.json');
-  if (fs.existsSync(configPath)) {
-    try {
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-      console.log(`  ✅ ${path.basename(dir)}: ${config.organizationUrl}/${config.project}`);
-    } catch (error) {
-      console.log(`  ❌ ${path.basename(dir)}: Invalid configuration - ${error.message}`);
+  // Direct file access without existsSync to avoid race conditions
+  try {
+    const content = fs.readFileSync(configPath, 'utf8');
+    const config = JSON.parse(content);
+    console.log(`  ✅ ${path.basename(dir)}: ${config.organizationUrl}/${config.project}`);
+  } catch (readError) {
+    if (readError.code === 'ENOENT') {
+      console.log(`  ❌ ${path.basename(dir)}: No configuration found`);
+    } else {
+      console.log(`  ❌ ${path.basename(dir)}: Invalid configuration - ${readError.message}`);
     }
-  } else {
-    console.log(`  ❌ ${path.basename(dir)}: No configuration found`);
   }
 });
 

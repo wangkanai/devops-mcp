@@ -9,23 +9,30 @@ console.log('Testing Error Handling and Fallback Mechanisms (Local Configuration
 console.log('🧪 Test 1: Missing local configuration file');
 const tempDir = './temp-test-dir';
 try {
-  if (!fs.existsSync(tempDir)) {
-    fs.mkdirSync(tempDir);
-  }
+  // Use mkdir with recursive option to handle race conditions
+  fs.mkdirSync(tempDir, { recursive: true });
   
   const configPath = path.join(tempDir, '.azure-devops.json');
-  const exists = fs.existsSync(configPath);
   
-  if (!exists) {
-    console.log('  ✅ No configuration found in test directory (expected)');
-  } else {
+  // Use direct file access instead of existsSync to avoid TOCTOU race conditions
+  try {
+    fs.readFileSync(configPath, 'utf8');
     console.log('  ❌ Unexpected configuration found');
+  } catch (readError) {
+    if (readError.code === 'ENOENT') {
+      console.log('  ✅ No configuration found in test directory (expected)');
+    } else {
+      console.log(`  ✅ Correctly handled missing config: ${readError.message}`);
+    }
   }
 } catch (error) {
   console.log(`  ✅ Correctly handled missing config: ${error.message}`);
 } finally {
-  if (fs.existsSync(tempDir)) {
+  // Use rmSync with force option to handle missing directory
+  try {
     fs.rmSync(tempDir, { recursive: true, force: true });
+  } catch (cleanupError) {
+    // Ignore cleanup errors in test
   }
 }
 
@@ -71,13 +78,19 @@ try {
 console.log('\n🧪 Test 4: Current directory configuration check');
 try {
   const currentConfigPath = './.azure-devops.json';
-  if (fs.existsSync(currentConfigPath)) {
-    const config = JSON.parse(fs.readFileSync(currentConfigPath, 'utf8'));
+  // Direct file access without existsSync to avoid race conditions
+  try {
+    const content = fs.readFileSync(currentConfigPath, 'utf8');
+    const config = JSON.parse(content);
     console.log('  ✅ Current directory has valid configuration');
     console.log(`    Organization: ${config.organizationUrl}`);
     console.log(`    Project: ${config.project}`);
-  } else {
-    console.log('  ❌ No configuration in current directory');
+  } catch (readError) {
+    if (readError.code === 'ENOENT') {
+      console.log('  ❌ No configuration in current directory');
+    } else {
+      console.log(`  ❌ Error reading current config: ${readError.message}`);
+    }
   }
 } catch (error) {
   console.log(`  ❌ Error reading current config: ${error.message}`);
