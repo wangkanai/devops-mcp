@@ -81,9 +81,9 @@ Project configurations now use environment variables for security:
 
 ### **Enhanced Operations (New)**
 
-6. **get-pull-requests**: Pull request management with status filtering
-7. **trigger-pipeline**: Automated pipeline triggering with parameters
-8. **get-pipeline-status**: Build and deployment status monitoring
+1. **get-pull-requests**: Pull request management with status filtering
+2. **trigger-pipeline**: Automated pipeline triggering with parameters
+3. **get-pipeline-status**: Build and deployment status monitoring
 
 ## 🚀 Deployment Configuration
 
