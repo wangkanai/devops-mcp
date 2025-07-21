@@ -62,9 +62,11 @@ export class LocalConfigLoader {
         pat: localConfig.pat
       };
 
-      console.log(`Loaded Azure DevOps config from ${configPath}`);
-      console.log(`Organization: ${config.organizationUrl}`);
-      console.log(`Project: ${config.project}`);
+      if (process.env.DEBUG === 'true') {
+        console.debug(`Loaded Azure DevOps config from ${configPath}`);
+        console.debug(`Organization: ${config.organizationUrl}`);
+        console.debug(`Project: ${config.project}`);
+      }
       
       return config;
     } catch (error) {
@@ -108,14 +110,31 @@ export class LocalConfigLoader {
   }
 
   /**
+   * Type guard to check if a string is a valid key of LocalAzureDevOpsConfig
+   */
+  private static isRequiredField(field: string): field is 'organizationUrl' | 'project' | 'pat' {
+    return ['organizationUrl', 'project', 'pat'].includes(field);
+  }
+
+  /**
+   * Check if hostname is a valid Azure DevOps domain
+   */
+  private static isValidAzureDevOpsHostname(hostname: string): boolean {
+    // Support dev.azure.com, visualstudio.com, and custom domains
+    return hostname === 'dev.azure.com' || 
+           hostname.endsWith('.visualstudio.com') ||
+           hostname.endsWith('.dev.azure.com');
+  }
+
+  /**
    * Validate local configuration structure
    */
   static validateLocalConfig(config: LocalAzureDevOpsConfig): boolean {
-    const requiredFields = ['organizationUrl', 'project', 'pat'];
+    const requiredFields = ['organizationUrl', 'project', 'pat'] as const;
     
     for (const field of requiredFields) {
-      if (!(field in config) || !config[field as keyof LocalAzureDevOpsConfig]) {
-        console.error(`Missing required field: ${field}`);
+      if (this.isRequiredField(field) && (!config[field] || typeof config[field] !== 'string')) {
+        console.error(`Missing or invalid required field: ${field}`);
         return false;
       }
     }
@@ -123,8 +142,8 @@ export class LocalConfigLoader {
     // Validate organization URL format
     try {
       const url = new URL(config.organizationUrl);
-      if (!url.hostname.includes('dev.azure.com')) {
-        console.error('Invalid organization URL: must be Azure DevOps URL');
+      if (!this.isValidAzureDevOpsHostname(url.hostname)) {
+        console.error('Invalid organization URL: hostname is not recognized as a valid Azure DevOps domain');
         return false;
       }
     } catch {

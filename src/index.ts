@@ -318,7 +318,7 @@ class AzureDevOpsMCPProxy {
       this.currentConfig = detectedConfig;
       this.toolHandlers.setCurrentConfig(detectedConfig);
       
-      console.error(`Switched to Azure DevOps context: ${detectedConfig.organizationUrl}/${detectedConfig.project}`);
+      console.log(`Switched to Azure DevOps context: ${detectedConfig.organizationUrl}/${detectedConfig.project}`);
     }
   }
 
