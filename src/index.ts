@@ -11,6 +11,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { DirectoryDetector } from './directory-detector.js';
 import { ConfigLoader } from './utils/config-loader.js';
+import { LocalConfigLoader } from './utils/local-config-loader.js';
 import { ToolHandlers } from './handlers/tool-handlers.js';
 import { AzureDevOpsConfig } from './types/index.js';
 
@@ -39,18 +40,44 @@ class AzureDevOpsMCPProxy {
   }
 
   /**
-   * Initialize configuration from environments.json
+   * Initialize configuration from local .azure-devops.json files
    */
   private initializeConfiguration(): void {
     try {
+      // Try loading local configuration first
+      this.currentConfig = LocalConfigLoader.findLocalConfig();
+      
+      if (this.currentConfig) {
+        this.toolHandlers.setCurrentConfig(this.currentConfig);
+        console.log('Azure DevOps MCP Proxy initialized with local configuration:', {
+          organizationUrl: this.currentConfig.organizationUrl,
+          project: this.currentConfig.project,
+          directory: process.cwd()
+        });
+        return;
+      }
+
+      // Fallback to environment-based configuration
+      console.log('No local configuration found, trying environment-based config...');
       const envConfig = ConfigLoader.loadConfig();
       this.directoryDetector = new DirectoryDetector(
         envConfig.mappings,
         envConfig.defaultConfig
       );
-      console.error('Configuration loaded successfully');
+      
+      this.currentConfig = this.directoryDetector.detectConfiguration();
+      if (this.currentConfig) {
+        this.toolHandlers.setCurrentConfig(this.currentConfig);
+        console.log('Azure DevOps MCP Proxy initialized with environment configuration:', {
+          organizationUrl: this.currentConfig.organizationUrl,
+          project: this.currentConfig.project
+        });
+      } else {
+        console.warn('No Azure DevOps configuration detected for current directory');
+        console.log('Consider creating a .azure-devops.json file in your repository');
+      }
     } catch (error) {
-      console.error('Failed to load configuration:', error);
+      console.error('Failed to initialize configuration:', error);
       // Initialize with empty configuration as fallback
       this.directoryDetector = new DirectoryDetector([]);
     }
