@@ -1,0 +1,23 @@
+{
+  "organizationUrl": "https://dev.azure.com/your-organization",
+  "project": "YourProject",
+  "pat": "your-personal-access-token-here",
+  "description": "Azure DevOps configuration for this repository",
+  "settings": {
+    "timeout": 30000,
+    "retries": 3,
+    "apiVersion": "7.1"
+  },
+  "tools": {
+    "workItems": true,
+    "repositories": true,
+    "builds": true,
+    "pullRequests": true,
+    "pipelines": true
+  },
+  "meta": {
+    "configVersion": "1.0",
+    "lastUpdated": "2025-07-21",
+    "createdBy": "azure-devops-mcp-proxy"
+  }
+}

@@ -4,25 +4,61 @@ A dynamic Azure DevOps MCP (Model Context Protocol) proxy server that automatica
 
 ## Features
 
+- **Local Configuration Files**: Each repository contains `.azure-devops.json` configuration
 - **Dynamic Environment Switching**: Automatically detects project context based on directory location
-- **Multiple Project Support**: Supports RiverSync and Mula projects with separate authentication
+- **Multiple Project Support**: Supports unlimited projects with separate authentication
 - **Comprehensive Azure DevOps Integration**: Work items, repositories, builds, and more
-- **Directory-based Configuration**: Zero-configuration switching between projects
-- **Error Handling & Fallback**: Robust error handling with graceful degradation
+- **Zero Configuration Switching**: Seamless switching between projects with local config files
+- **Secure Token Storage**: PAT tokens stored locally per repository (excluded from git)
+- **Error Handling & Fallback**: Robust error handling with graceful degradation to environment variables
 
-## Project Configuration
+## Local Configuration
 
-The server is pre-configured for two target projects:
+Each repository should contain a `.azure-devops.json` configuration file:
 
-### RiverSync Project
+### Configuration File Structure
+```json
+{
+  "organizationUrl": "https://dev.azure.com/your-org",
+  "project": "YourProject",
+  "pat": "your-pat-token-here",
+  "description": "Azure DevOps configuration for this repository",
+  "settings": {
+    "timeout": 30000,
+    "retries": 3,
+    "apiVersion": "7.1"
+  },
+  "tools": {
+    "workItems": true,
+    "repositories": true,
+    "builds": true,
+    "pullRequests": true,
+    "pipelines": true
+  },
+  "meta": {
+    "configVersion": "1.0",
+    "lastUpdated": "2025-07-21",
+    "createdBy": "azure-devops-mcp-proxy"
+  }
+}
+```
+
+### Security Configuration
+**Important**: Add `.azure-devops.json` to your `.gitignore` file:
+```gitignore
+# Azure DevOps MCP local configuration (contains PAT tokens)
+.azure-devops.json
+```
+
+### Example Projects
+
+#### RiverSync Project
 - **Directory**: `/Users/wangkanai/Sources/riversync`
-- **Organization**: `https://dev.azure.com/riversync`
-- **Project**: `RiverSync`
+- **Configuration**: `.azure-devops.json` with RiverSync organization settings
 
-### Mula Project
+#### Mula Project
 - **Directory**: `/Users/wangkanai/Sources/mula`
-- **Organization**: `https://dev.azure.com/mula-x`
-- **Project**: `mula`
+- **Configuration**: `.azure-devops.json` with Mula organization settings
 
 ## Installation
 
