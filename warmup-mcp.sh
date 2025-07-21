@@ -49,7 +49,7 @@ warmup_repository() {
     echo "Testing $name:"
     
     if [ -d "$path" ]; then
-        cd "$path"
+        cd "$path" || return 1
         
         # Test MCP server list
         echo -n "   Checking MCP configuration... "
@@ -71,8 +71,7 @@ warmup_repository() {
         
         # Test basic MCP command (with timeout)
         echo -n "   Testing MCP command execution... "
-        timeout 10s claude -c "echo 'MCP warmup test'" &>/dev/null
-        if [ $? -eq 0 ]; then
+        if timeout 10s claude -c "echo 'MCP warmup test'" &>/dev/null; then
             echo -e "${GREEN}✅${RESET}"
         else
             echo -e "${YELLOW}⚠️ (timeout or error)${RESET}"

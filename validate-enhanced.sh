@@ -31,7 +31,7 @@ if ! command -v pwsh &> /dev/null; then
 fi
 
 # Check PowerShell version
-PWSH_VERSION=$(pwsh -Command '$PSVersionTable.PSVersion.Major')
+PWSH_VERSION=$(pwsh -Command "\$PSVersionTable.PSVersion.Major")
 if [ "$PWSH_VERSION" -lt 7 ]; then
     echo -e "${RED}❌ PowerShell version 7+ required (current: $PWSH_VERSION)${RESET}"
     exit 1
