@@ -304,6 +304,11 @@ class AzureDevOpsMCPProxy {
    * Update current Azure DevOps context based on working directory
    */
   private async updateCurrentContext(): Promise<void> {
+    // Skip update if using local configuration (no directory detector)
+    if (!this.directoryDetector) {
+      return;
+    }
+
     const detectedConfig = this.directoryDetector.detectConfiguration();
     
     if (detectedConfig && (!this.currentConfig || 
@@ -321,14 +326,47 @@ class AzureDevOpsMCPProxy {
    * Handle get-current-context tool call
    */
   private handleGetCurrentContext(args?: any): any {
-    const directory = args?.directory;
-    const context = this.directoryDetector.getProjectContext(directory);
+    const directory = args?.directory || process.cwd();
     
-    if (!context) {
+    // If using local configuration, return current config
+    if (!this.directoryDetector && this.currentConfig) {
       return {
         content: [{
           type: 'text',
-          text: 'No Azure DevOps context configured for the specified directory.',
+          text: JSON.stringify({
+            organizationUrl: this.currentConfig.organizationUrl,
+            project: this.currentConfig.project,
+            directory: directory,
+            configurationSource: 'local',
+            configFile: '.azure-devops.json'
+          }, null, 2),
+        }],
+      };
+    }
+
+    // Fall back to directory detector if available
+    if (this.directoryDetector) {
+      const context = this.directoryDetector.getProjectContext(directory);
+      
+      if (!context) {
+        return {
+          content: [{
+            type: 'text',
+            text: 'No Azure DevOps context configured for the specified directory.',
+          }],
+        };
+      }
+
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify({
+            organizationUrl: context.organizationUrl,
+            project: context.projectName,
+            directory: directory,
+            configurationSource: 'environment',
+            configuredDirectories: this.directoryDetector.getConfiguredDirectories(),
+          }, null, 2),
         }],
       };
     }
@@ -336,12 +374,7 @@ class AzureDevOpsMCPProxy {
     return {
       content: [{
         type: 'text',
-        text: JSON.stringify({
-          organizationUrl: context.organizationUrl,
-          project: context.projectName,
-          directory: directory || process.cwd(),
-          configuredDirectories: this.directoryDetector.getConfiguredDirectories(),
-        }, null, 2),
+        text: 'No Azure DevOps configuration found.',
       }],
     };
   }
