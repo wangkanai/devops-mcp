@@ -124,3 +124,6 @@ Thumbs.db
 
 # Azure DevOps specific
 .azure/
+
+# Local configuration files (contains PAT tokens)
+.azure-devops.json
