@@ -160,7 +160,7 @@ function Initialize-MCPServers {
             $mcpListExitCode = $LASTEXITCODE
             
             if ($mcpListExitCode -eq 0) {
-                $hasAzureDevOps = $mcpListOutput -match $Global:Config.testSettings.mcpServerName
+                $hasAzureDevOps = ($mcpListOutput -match $Global:Config.testSettings.mcpServerName) -ne $null -and ($mcpListOutput -match $Global:Config.testSettings.mcpServerName).Count -gt 0
                 
                 if ($hasAzureDevOps) {
                     Write-TestResult "$($repo.name) - MCP Server Configured" $true "Found $($Global:Config.testSettings.mcpServerName)"
@@ -174,11 +174,11 @@ function Initialize-MCPServers {
                     
                     while ($retryCount -lt $maxRetries -and -not $connectivityTest) {
                         try {
-                            # Use a simple MCP command to test connectivity
-                            $testProcess = Start-Process -FilePath "claude" -ArgumentList "mcp", "get", $Global:Config.testSettings.mcpServerName -NoNewWindow -PassThru -RedirectStandardOutput -RedirectStandardError
-                            $testFinished = $testProcess.WaitForExit(15000) # 15 second timeout
+                            # Use a simpler approach - just test if the command executes
+                            $mcpTestOutput = claude mcp get $Global:Config.testSettings.mcpServerName 2>&1
+                            $mcpTestExitCode = $LASTEXITCODE
                             
-                            if ($testFinished -and $testProcess.ExitCode -eq 0) {
+                            if ($mcpTestExitCode -eq 0) {
                                 $connectivityTest = $true
                                 Write-TestResult "$($repo.name) - MCP Connectivity" $true "Connected successfully"
                             } else {
@@ -187,10 +187,6 @@ function Initialize-MCPServers {
                                     Write-Host "${Yellow}⚠️${Reset} MCP connectivity test failed, retrying ($retryCount/$maxRetries)..."
                                     Start-Sleep -Seconds 2
                                 }
-                            }
-                            
-                            if (-not $testFinished) {
-                                $testProcess.Kill()
                             }
                         } catch {
                             $retryCount++
@@ -239,10 +235,10 @@ function Test-MCPServerReadiness {
             $mcpGetExitCode = $LASTEXITCODE
             
             if ($mcpGetExitCode -eq 0) {
-                # Parse server details
-                $isLocalScope = $mcpGetOutput -match "Scope: Local"
-                $hasCorrectCommand = $mcpGetOutput -match "Command: node"
-                $hasProxyPath = $mcpGetOutput -match [regex]::Escape($Global:Config.proxyPath)
+                # Parse server details with explicit boolean conversion
+                $isLocalScope = ($mcpGetOutput -match "Scope: Local") -ne $null -and ($mcpGetOutput -match "Scope: Local").Count -gt 0
+                $hasCorrectCommand = ($mcpGetOutput -match "Command: node") -ne $null -and ($mcpGetOutput -match "Command: node").Count -gt 0
+                $hasProxyPath = ($mcpGetOutput -match [regex]::Escape($Global:Config.proxyPath)) -ne $null -and ($mcpGetOutput -match [regex]::Escape($Global:Config.proxyPath)).Count -gt 0
                 
                 Write-TestResult "$($repo.name) - MCP Server Details" $true "Command executed successfully"
                 Write-TestResult "$($repo.name) - Local Scope" $isLocalScope "Scope validation"
@@ -250,10 +246,11 @@ function Test-MCPServerReadiness {
                 Write-TestResult "$($repo.name) - Proxy Path" $hasProxyPath "Correct proxy path"
                 
                 # Check for environment variables (should be empty for local config)
-                $environmentSection = $mcpGetOutput -match "Environment:"
+                $environmentSection = ($mcpGetOutput -match "Environment:") -ne $null -and ($mcpGetOutput -match "Environment:").Count -gt 0
                 if ($environmentSection) {
-                    $nextLine = ($mcpGetOutput -split "`n" | Select-String -Pattern "Environment:" -Context 0,1).Context.PostContext
-                    $noEnvVars = -not $nextLine -or $nextLine -match "^\s*$"
+                    $envLines = $mcpGetOutput -split "`n" | Select-String -Pattern "Environment:" -Context 0,1
+                    $nextLine = if ($envLines -and $envLines.Context -and $envLines.Context.PostContext) { $envLines.Context.PostContext } else { $null }
+                    $noEnvVars = (-not $nextLine) -or ($nextLine -match "^\s*$")
                     Write-TestResult "$($repo.name) - No Environment Variables" $noEnvVars "Using local configuration"
                 }
                 
@@ -354,15 +351,15 @@ mcp__$($Global:Config.testSettings.mcpServerName)__get-current-context
                 $claudeError = $process.StandardError.ReadToEnd()
                 
                 # Test context detection
-                $contextMatch = $claudeOutput -match $Repository.expectedOrganization
+                $contextMatch = ($claudeOutput -match $Repository.expectedOrganization) -ne $null -and ($claudeOutput -match $Repository.expectedOrganization).Count -gt 0
                 Write-TestResult "$($Repository.name) - Context Detection" $contextMatch "Expected: $($Repository.expectedOrganization)"
                 
                 # Test command execution (look for JSON response)
-                $commandsExecuted = $claudeOutput -match "organizationUrl|project"
+                $commandsExecuted = ($claudeOutput -match "organizationUrl|project") -ne $null -and ($claudeOutput -match "organizationUrl|project").Count -gt 0
                 Write-TestResult "$($Repository.name) - MCP Commands Executed" $commandsExecuted
                 
                 # Test no errors
-                $hasErrors = $claudeError -match "Error:|error:|failed|Failed"
+                $hasErrors = ($claudeError -match "Error:|error:|failed|Failed") -ne $null -and ($claudeError -match "Error:|error:|failed|Failed").Count -gt 0
                 Write-TestResult "$($Repository.name) - No Command Errors" (-not $hasErrors)
                 
                 if ($Global:Config.testSettings.verbose -and $claudeOutput) {
