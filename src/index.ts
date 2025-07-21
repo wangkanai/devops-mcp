@@ -148,6 +148,78 @@ class AzureDevOpsMCPProxy {
           },
         },
         {
+          name: 'get-pull-requests',
+          description: 'Get pull requests from Azure DevOps repository',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              repositoryId: {
+                type: 'string',
+                description: 'Repository ID or name (optional, defaults to all repos)',
+              },
+              status: {
+                type: 'string',
+                enum: ['active', 'completed', 'abandoned', 'all'],
+                description: 'Pull request status filter (default: active)',
+              },
+              createdBy: {
+                type: 'string',
+                description: 'Filter by creator (user ID or email)',
+              },
+              top: {
+                type: 'number',
+                description: 'Number of pull requests to return (default: 25)',
+              },
+            },
+          },
+        },
+        {
+          name: 'trigger-pipeline',
+          description: 'Trigger a build pipeline in Azure DevOps',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              definitionId: {
+                type: 'number',
+                description: 'Build definition ID to trigger',
+              },
+              definitionName: {
+                type: 'string',
+                description: 'Build definition name (alternative to ID)',
+              },
+              sourceBranch: {
+                type: 'string',
+                description: 'Source branch to build (default: default branch)',
+              },
+              parameters: {
+                type: 'object',
+                description: 'Pipeline parameters as key-value pairs',
+              },
+            },
+          },
+        },
+        {
+          name: 'get-pipeline-status',
+          description: 'Get status of a specific build or pipeline',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              buildId: {
+                type: 'number',
+                description: 'Specific build ID to check status',
+              },
+              definitionId: {
+                type: 'number',
+                description: 'Get latest builds for this definition ID',
+              },
+              includeTimeline: {
+                type: 'boolean',
+                description: 'Include detailed timeline information',
+              },
+            },
+          },
+        },
+        {
           name: 'get-current-context',
           description: 'Get current Azure DevOps context based on directory',
           inputSchema: {

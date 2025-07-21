@@ -37,6 +37,12 @@ export class ToolHandlers {
           return await this.getRepositories(args || {});
         case 'get-builds':
           return await this.getBuilds(args || {});
+        case 'get-pull-requests':
+          return await this.getPullRequests(args || {});
+        case 'trigger-pipeline':
+          return await this.triggerPipeline(args || {});
+        case 'get-pipeline-status':
+          return await this.getPipelineStatus(args || {});
         default:
           throw new Error(`Unknown tool: ${name}`);
       }
@@ -320,6 +326,248 @@ export class ToolHandlers {
       };
     } catch (error) {
       throw new Error(`Failed to get builds: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get pull requests from Azure DevOps repositories
+   */
+  private async getPullRequests(args: any): Promise<any> {
+    try {
+      let endpoint = '/git/pullrequests?api-version=7.1';
+      
+      const params = [];
+      
+      // Status filter (default to active)
+      const status = args.status || 'active';
+      if (status !== 'all') {
+        params.push(`searchCriteria.status=${status}`);
+      }
+      
+      // Creator filter
+      if (args.createdBy) {
+        params.push(`searchCriteria.creatorId=${encodeURIComponent(args.createdBy)}`);
+      }
+      
+      // Repository filter
+      if (args.repositoryId) {
+        params.push(`searchCriteria.repositoryId=${encodeURIComponent(args.repositoryId)}`);
+      }
+      
+      // Top (limit) parameter
+      const top = args.top || 25;
+      params.push(`$top=${top}`);
+      
+      if (params.length > 0) {
+        endpoint += '&' + params.join('&');
+      }
+
+      const result = await this.makeApiRequest(endpoint);
+
+      const pullRequests = result.value.map((pr: any) => ({
+        id: pr.pullRequestId,
+        title: pr.title,
+        description: pr.description,
+        status: pr.status,
+        createdBy: {
+          displayName: pr.createdBy.displayName,
+          uniqueName: pr.createdBy.uniqueName
+        },
+        creationDate: pr.creationDate,
+        repository: {
+          id: pr.repository.id,
+          name: pr.repository.name
+        },
+        sourceRefName: pr.sourceRefName,
+        targetRefName: pr.targetRefName,
+        url: pr._links?.web?.href || `${this.currentConfig!.organizationUrl}/${this.currentConfig!.project}/_git/${pr.repository.name}/pullrequest/${pr.pullRequestId}`,
+        isDraft: pr.isDraft || false,
+        mergeStatus: pr.mergeStatus
+      }));
+
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify({
+            count: pullRequests.length,
+            status: status,
+            pullRequests
+          }, null, 2),
+        }],
+      };
+    } catch (error) {
+      throw new Error(`Failed to get pull requests: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Trigger a build pipeline in Azure DevOps
+   */
+  private async triggerPipeline(args: any): Promise<any> {
+    try {
+      let definitionId = args.definitionId;
+      
+      // If definition name is provided instead of ID, look up the ID
+      if (!definitionId && args.definitionName) {
+        const definitions = await this.makeApiRequest('/build/definitions?api-version=7.1');
+        const definition = definitions.value.find((def: any) => 
+          def.name.toLowerCase() === args.definitionName.toLowerCase()
+        );
+        
+        if (!definition) {
+          throw new Error(`Build definition '${args.definitionName}' not found`);
+        }
+        
+        definitionId = definition.id;
+      }
+      
+      if (!definitionId) {
+        throw new Error('Either definitionId or definitionName must be provided');
+      }
+
+      // Prepare the build request
+      const buildRequest: any = {
+        definition: {
+          id: definitionId
+        }
+      };
+
+      // Add source branch if specified
+      if (args.sourceBranch) {
+        buildRequest.sourceBranch = args.sourceBranch.startsWith('refs/') 
+          ? args.sourceBranch 
+          : `refs/heads/${args.sourceBranch}`;
+      }
+
+      // Add parameters if specified
+      if (args.parameters && typeof args.parameters === 'object') {
+        buildRequest.parameters = JSON.stringify(args.parameters);
+      }
+
+      const result = await this.makeApiRequest(
+        '/build/builds?api-version=7.1',
+        'POST',
+        buildRequest
+      );
+
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify({
+            success: true,
+            build: {
+              id: result.id,
+              buildNumber: result.buildNumber,
+              status: result.status,
+              queueTime: result.queueTime,
+              definition: {
+                id: result.definition.id,
+                name: result.definition.name
+              },
+              sourceBranch: result.sourceBranch,
+              url: result._links?.web?.href || `${this.currentConfig!.organizationUrl}/${this.currentConfig!.project}/_build/results?buildId=${result.id}`,
+              requestedBy: {
+                displayName: result.requestedBy?.displayName || 'API Request',
+                uniqueName: result.requestedBy?.uniqueName || 'api'
+              }
+            }
+          }, null, 2),
+        }],
+      };
+    } catch (error) {
+      throw new Error(`Failed to trigger pipeline: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get pipeline status and detailed information
+   */
+  private async getPipelineStatus(args: any): Promise<any> {
+    try {
+      if (args.buildId) {
+        // Get specific build details
+        const build = await this.makeApiRequest(`/build/builds/${args.buildId}?api-version=7.1`);
+        
+        let timeline = null;
+        if (args.includeTimeline) {
+          try {
+            timeline = await this.makeApiRequest(`/build/builds/${args.buildId}/timeline?api-version=7.1`);
+          } catch (timelineError) {
+            console.error('Failed to get timeline:', timelineError);
+            // Continue without timeline if it fails
+          }
+        }
+
+        const buildInfo = {
+          id: build.id,
+          buildNumber: build.buildNumber,
+          status: build.status,
+          result: build.result,
+          definition: {
+            id: build.definition.id,
+            name: build.definition.name
+          },
+          sourceBranch: build.sourceBranch,
+          sourceVersion: build.sourceVersion,
+          queueTime: build.queueTime,
+          startTime: build.startTime,
+          finishTime: build.finishTime,
+          url: build._links?.web?.href,
+          requestedBy: {
+            displayName: build.requestedBy?.displayName,
+            uniqueName: build.requestedBy?.uniqueName
+          },
+          ...(timeline && { 
+            timeline: timeline.records?.map((record: any) => ({
+              name: record.name,
+              type: record.type,
+              state: record.state,
+              result: record.result,
+              startTime: record.startTime,
+              finishTime: record.finishTime,
+              percentComplete: record.percentComplete
+            }))
+          })
+        };
+
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify(buildInfo, null, 2),
+          }],
+        };
+      } else if (args.definitionId) {
+        // Get latest builds for a specific definition
+        const builds = await this.makeApiRequest(
+          `/build/builds?definitions=${args.definitionId}&$top=5&api-version=7.1`
+        );
+
+        const buildsInfo = builds.value.map((build: any) => ({
+          id: build.id,
+          buildNumber: build.buildNumber,
+          status: build.status,
+          result: build.result,
+          sourceBranch: build.sourceBranch,
+          queueTime: build.queueTime,
+          startTime: build.startTime,
+          finishTime: build.finishTime,
+          url: build._links?.web?.href
+        }));
+
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              definitionId: args.definitionId,
+              recentBuilds: buildsInfo
+            }, null, 2),
+          }],
+        };
+      } else {
+        throw new Error('Either buildId or definitionId must be provided');
+      }
+    } catch (error) {
+      throw new Error(`Failed to get pipeline status: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 }
