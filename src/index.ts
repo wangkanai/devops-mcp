@@ -24,7 +24,7 @@ class AzureDevOpsMCPProxy {
   constructor() {
     this.server = new Server(
       {
-        name: 'azure-devops-mcp-proxy',
+        name: 'devops-enhanced-mcp',
         version: '1.0.0',
       },
       {
