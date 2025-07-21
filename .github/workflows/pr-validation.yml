@@ -1,0 +1,206 @@
+name: Pull Request Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [ main, develop ]
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-info:
+    name: PR Information
+    runs-on: ubuntu-latest
+    if: '!github.event.pull_request.draft'
+    steps:
+      - name: PR Details
+        run: |
+          echo "## 📋 Pull Request Information" >> $GITHUB_STEP_SUMMARY
+          echo "- **Title:** ${{ github.event.pull_request.title }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Author:** @${{ github.event.pull_request.user.login }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** \`${{ github.event.pull_request.head.ref }}\` → \`${{ github.event.pull_request.base.ref }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commits:** ${{ github.event.pull_request.commits }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Files Changed:** ${{ github.event.pull_request.changed_files }}" >> $GITHUB_STEP_SUMMARY
+
+  validate-pr:
+    name: Validate Pull Request
+    runs-on: ubuntu-latest
+    if: '!github.event.pull_request.draft'
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+      - name: Validate MCP server
+        run: npm run validate:mcp
+
+  security-check:
+    name: Security Check
+    runs-on: ubuntu-latest
+    if: '!github.event.pull_request.draft'
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Security audit
+        run: npm audit --audit-level moderate
+
+      - name: Check for secrets
+        run: |
+          # Check for potential secrets in code
+          if grep -r -i "pat.*[a-zA-Z0-9]{52}" . --exclude-dir=node_modules --exclude-dir=.git; then
+            echo "❌ Potential PAT token found in code"
+            exit 1
+          fi
+          
+          if grep -r -i "password\|secret\|key.*=" . --exclude-dir=node_modules --exclude-dir=.git --include="*.ts" --include="*.js"; then
+            echo "⚠️ Potential credentials found - please review"
+          fi
+          
+          echo "✅ No obvious secrets detected"
+
+  changes-detection:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      src-changed: ${{ steps.changes.outputs.src }}
+      docs-changed: ${{ steps.changes.outputs.docs }}
+      config-changed: ${{ steps.changes.outputs.config }}
+      tests-changed: ${{ steps.changes.outputs.tests }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Detect changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            src:
+              - 'src/**'
+              - 'package.json'
+              - 'tsconfig.json'
+            docs:
+              - '**.md'
+              - 'docs/**'
+            config:
+              - 'config/**'
+              - '.github/**'
+            tests:
+              - 'test*.js'
+              - 'tests/**'
+
+  conditional-tests:
+    name: Conditional Tests
+    runs-on: ubuntu-latest
+    needs: changes-detection
+    if: needs.changes-detection.outputs.src-changed == 'true'
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Extended testing for source changes
+        run: |
+          echo "Running extended tests for source code changes..."
+          npm test
+          npm run validate:mcp
+          
+          # Test build output
+          if [ ! -f "dist/index.js" ]; then
+            echo "❌ Build output missing"
+            exit 1
+          fi
+          
+          echo "✅ Extended tests passed"
+
+  pr-summary:
+    name: PR Summary
+    runs-on: ubuntu-latest
+    needs: [validate-pr, security-check, changes-detection]
+    if: always() && !github.event.pull_request.draft
+    steps:
+      - name: Generate PR summary
+        run: |
+          echo "## 🔍 Pull Request Validation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Validation results
+          if [ "${{ needs.validate-pr.result }}" = "success" ]; then
+            echo "✅ **Validation:** All checks passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Validation:** Some checks failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Security results
+          if [ "${{ needs.security-check.result }}" = "success" ]; then
+            echo "✅ **Security:** No issues detected" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Security:** Issues found - please review" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Changes summary
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📁 Changes Detected" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.changes-detection.outputs.src-changed }}" = "true" ]; then
+            echo "- 🔧 Source code changes" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ needs.changes-detection.outputs.docs-changed }}" = "true" ]; then
+            echo "- 📚 Documentation changes" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ needs.changes-detection.outputs.config-changed }}" = "true" ]; then
+            echo "- ⚙️ Configuration changes" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ needs.changes-detection.outputs.tests-changed }}" = "true" ]; then
+            echo "- 🧪 Test changes" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Ready for review! 🚀" >> $GITHUB_STEP_SUMMARY

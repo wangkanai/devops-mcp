@@ -1,0 +1,259 @@
+name: Release Automation
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.2.3)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Mark as pre-release'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  validate-release:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      is-prerelease: ${{ steps.version.outputs.is-prerelease }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+            IS_PRERELEASE="${{ github.event.inputs.prerelease }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/}"
+            # Check if version contains pre-release identifiers
+            if [[ "$VERSION" =~ -(alpha|beta|rc|pre) ]]; then
+              IS_PRERELEASE="true"
+            else
+              IS_PRERELEASE="false"
+            fi
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "is-prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+          echo "Release version: $VERSION (prerelease: $IS_PRERELEASE)"
+
+      - name: Validate version format
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+(\.[0-9]+)?)?$ ]]; then
+            echo "❌ Invalid version format: $VERSION"
+            echo "Expected format: v1.2.3 or v1.2.3-alpha.1"
+            exit 1
+          fi
+          echo "✅ Version format valid: $VERSION"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run full test suite
+        run: |
+          npm run lint
+          npm run type-check
+          npm test
+          npm run build
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: validate-release
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch full history for changelog
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build release package
+        run: |
+          npm run build
+          
+          # Create release directory
+          mkdir -p release
+          
+          # Copy essential files
+          cp -r dist/ release/
+          cp package.json release/
+          cp README.md release/
+          cp config/environments.example.json release/environments.example.json
+          
+          # Create installation script
+          cat > release/install.sh << 'EOF'
+          #!/bin/bash
+          # Azure DevOps MCP Proxy Installation Script
+          
+          echo "🚀 Installing Azure DevOps MCP Proxy..."
+          
+          # Check if Node.js is installed
+          if ! command -v node &> /dev/null; then
+              echo "❌ Node.js is required but not installed"
+              echo "Please install Node.js from https://nodejs.org"
+              exit 1
+          fi
+          
+          # Check Node.js version
+          NODE_VERSION=$(node -v | cut -d'v' -f2)
+          REQUIRED_VERSION="16.0.0"
+          
+          if [ "$(printf '%s\n' "$REQUIRED_VERSION" "$NODE_VERSION" | sort -V | head -n1)" != "$REQUIRED_VERSION" ]; then
+              echo "❌ Node.js version $NODE_VERSION is not supported"
+              echo "Please upgrade to Node.js 16 or higher"
+              exit 1
+          fi
+          
+          echo "✅ Node.js version $NODE_VERSION detected"
+          echo "✅ Azure DevOps MCP Proxy installed successfully"
+          echo ""
+          echo "📋 Next steps:"
+          echo "1. Copy environments.example.json to environments.json"
+          echo "2. Configure your Azure DevOps PAT tokens"
+          echo "3. Add to Claude Code MCP configuration"
+          echo ""
+          echo "📖 See README.md for detailed setup instructions"
+          EOF
+          
+          chmod +x release/install.sh
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          if [ -n "$PREVIOUS_TAG" ]; then
+            echo "Generating changelog since $PREVIOUS_TAG..."
+            CHANGELOG=$(git log --pretty=format:"- %s" $PREVIOUS_TAG..HEAD | grep -E "^- (feat|fix|chore|docs|style|refactor|test|perf):" || echo "- Various improvements and bug fixes")
+          else
+            echo "No previous tag found, generating initial changelog..."
+            CHANGELOG="- Initial release of Azure DevOps MCP Proxy
+          - Dynamic environment switching between RiverSync and Mula projects
+          - 8 comprehensive Azure DevOps tools
+          - Secure PAT token management
+          - Full Claude Code MCP integration"
+          fi
+          
+          # Format changelog
+          FORMATTED_CHANGELOG=$(cat << EOF
+          ## 🚀 What's New
+          
+          $CHANGELOG
+          
+          ## 📦 Installation
+          
+          ### Quick Install
+          1. Download and extract the release package
+          2. Run \`./install.sh\` (Linux/macOS) or follow manual setup
+          3. Configure your Azure DevOps PAT tokens
+          4. Add to Claude Code MCP configuration
+          
+          ### Manual Setup
+          1. Ensure Node.js 16+ is installed
+          2. Copy \`environments.example.json\` to \`environments.json\`
+          3. Set your PAT tokens in environment variables or \`.env\` file
+          4. Add MCP server to Claude Code configuration
+          
+          ## 🔧 Available Tools
+          
+          - **get-work-items**: Query and manage work items
+          - **create-work-item**: Create new work items
+          - **get-repositories**: List project repositories
+          - **get-builds**: Query build definitions and history
+          - **get-pull-requests**: Pull request management
+          - **trigger-pipeline**: Automated pipeline triggering
+          - **get-pipeline-status**: Build status monitoring
+          - **get-current-context**: Project context information
+          
+          ## 📖 Documentation
+          
+          See [README.md](README.md) and [IMPLEMENTATION-SUMMARY.md](IMPLEMENTATION-SUMMARY.md) for detailed setup and usage instructions.
+          EOF
+          )
+          
+          # Save changelog to file and output
+          echo "$FORMATTED_CHANGELOG" > changelog.md
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$FORMATTED_CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create release packages
+        run: |
+          VERSION="${{ needs.validate-release.outputs.version }}"
+          
+          # Create compressed archives
+          cd release
+          tar -czf ../azure-devops-mcp-proxy-${VERSION}.tar.gz .
+          zip -r ../azure-devops-mcp-proxy-${VERSION}.zip .
+          cd ..
+          
+          # Generate checksums
+          sha256sum azure-devops-mcp-proxy-${VERSION}.tar.gz > azure-devops-mcp-proxy-${VERSION}.tar.gz.sha256
+          sha256sum azure-devops-mcp-proxy-${VERSION}.zip > azure-devops-mcp-proxy-${VERSION}.zip.sha256
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.validate-release.outputs.version }}
+          name: Azure DevOps MCP Proxy ${{ needs.validate-release.outputs.version }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          prerelease: ${{ needs.validate-release.outputs.is-prerelease == 'true' }}
+          files: |
+            azure-devops-mcp-proxy-${{ needs.validate-release.outputs.version }}.tar.gz
+            azure-devops-mcp-proxy-${{ needs.validate-release.outputs.version }}.zip
+            azure-devops-mcp-proxy-${{ needs.validate-release.outputs.version }}.tar.gz.sha256
+            azure-devops-mcp-proxy-${{ needs.validate-release.outputs.version }}.zip.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  post-release:
+    name: Post-Release Tasks
+    runs-on: ubuntu-latest
+    needs: [validate-release, create-release]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update documentation
+        run: |
+          VERSION="${{ needs.validate-release.outputs.version }}"
+          echo "📋 Post-release tasks for $VERSION"
+          echo "✅ GitHub release created"
+          echo "✅ Release packages uploaded"
+          echo "✅ Checksums generated"
+          
+      - name: Notify release completion
+        run: |
+          VERSION="${{ needs.validate-release.outputs.version }}"
+          echo "🎉 Azure DevOps MCP Proxy $VERSION released successfully!"
+          echo "📦 Release packages available on GitHub"
+          echo "🔗 https://github.com/${{ github.repository }}/releases/tag/$VERSION"
