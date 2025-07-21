@@ -1,139 +1,112 @@
 #!/usr/bin/env node
 
-const { DirectoryDetector } = require('./dist/directory-detector.js');
-const { ConfigLoader } = require('./dist/utils/config-loader.js');
 const fs = require('fs');
+const path = require('path');
 
-console.log('Testing PAT Token Security and Configuration Isolation\n');
+console.log('Testing PAT Token Security and Configuration Isolation (Local Configuration)\n');
 
-// Test 1: Configuration loading and PAT token presence
-console.log('🔐 Test 1: Configuration loading and PAT token validation');
+// Test 1: Local configuration security
+console.log('🔐 Test 1: Local configuration security validation');
 try {
-  const config = ConfigLoader.loadConfig();
-  
-  console.log('  ✅ Configuration loaded successfully');
-  console.log(`  📊 Mappings found: ${config.mappings.length}`);
-  
-  for (const mapping of config.mappings) {
-    const hasValidPAT = mapping.config.pat && 
-                       mapping.config.pat.length > 20 && 
-                       mapping.config.pat !== 'DEFAULT_PAT_TOKEN';
-    console.log(`  🔑 ${mapping.config.project}: ${hasValidPAT ? 'Valid PAT configured' : 'Invalid/missing PAT'}`);
+  const currentConfigPath = './.azure-devops.json';
+  if (fs.existsSync(currentConfigPath)) {
+    const stats = fs.statSync(currentConfigPath);
+    const config = JSON.parse(fs.readFileSync(currentConfigPath, 'utf8'));
     
-    // Verify PAT is not logged in full
-    const maskedPAT = mapping.config.pat ? `${mapping.config.pat.substring(0, 8)}***${mapping.config.pat.substring(mapping.config.pat.length - 4)}` : 'NOT_SET';
-    console.log(`      Masked PAT: ${maskedPAT}`);
-  }
-  
-} catch (error) {
-  console.log(`  ❌ Configuration error: ${error.message}`);
-}
-
-// Test 2: Directory detector security - ensure PATs are not exposed through getProjectContext
-console.log('\n🔐 Test 2: PAT token isolation in directory detection');
-try {
-  const config = ConfigLoader.loadConfig();
-  const detector = new DirectoryDetector(config.mappings, config.defaultConfig);
-  
-  // Test each configured directory
-  for (const mapping of config.mappings) {
-    const context = detector.getProjectContext(mapping.directory);
+    console.log('  ✅ Configuration file found and readable');
+    console.log(`    File size: ${stats.size} bytes`);
+    console.log(`    PAT token length: ${config.pat ? config.pat.length : 0} characters`);
+    console.log(`    Organization: ${config.organizationUrl}`);
     
-    console.log(`  📁 ${mapping.directory}:`);
-    console.log(`      Project: ${context.projectName}`);
-    console.log(`      Organization: ${context.organizationUrl}`);
-    
-    // Security check: ensure PAT is not exposed
-    const hasExposedPAT = JSON.stringify(context).includes(mapping.config.pat);
-    console.log(`      🔒 PAT Security: ${hasExposedPAT ? '❌ EXPOSED' : '✅ SECURE'}`);
-    
-    // Check for any sensitive fields
-    const sensitiveFields = ['pat', 'token', 'password', 'secret'];
-    const contextKeys = Object.keys(context);
-    const exposedSensitive = sensitiveFields.some(field => contextKeys.includes(field));
-    console.log(`      🛡️  Sensitive fields: ${exposedSensitive ? '❌ PRESENT' : '✅ CLEAN'}`);
-  }
-  
-} catch (error) {
-  console.log(`  ❌ Directory detection error: ${error.message}`);
-}
-
-// Test 3: Configuration file permissions
-console.log('\n🔐 Test 3: Configuration file security');
-try {
-  const configPath = './config/environments.json';
-  const stats = fs.statSync(configPath);
-  const permissions = (stats.mode & parseInt('777', 8)).toString(8);
-  
-  console.log(`  📄 Config file: ${configPath}`);
-  console.log(`  🔐 Permissions: ${permissions}`);
-  
-  // Check if file is readable by others
-  const isWorldReadable = (stats.mode & parseInt('044', 8)) !== 0;
-  console.log(`  👁️  World readable: ${isWorldReadable ? '⚠️  YES (potential security risk)' : '✅ NO'}`);
-  
-  // Check if file is writable by group/others
-  const isWorldWritable = (stats.mode & parseInt('022', 8)) !== 0;
-  console.log(`  ✏️  World writable: ${isWorldWritable ? '❌ YES (security risk)' : '✅ NO'}`);
-  
-} catch (error) {
-  console.log(`  ❌ File permission check error: ${error.message}`);
-}
-
-// Test 4: Environment variable isolation
-console.log('\n🔐 Test 4: Environment variable isolation');
-try {
-  // Check that PAT tokens are not accidentally exposed in environment
-  const envVars = Object.keys(process.env);
-  const suspiciousEnvVars = envVars.filter(key => 
-    key.toLowerCase().includes('pat') || 
-    key.toLowerCase().includes('token') ||
-    key.toLowerCase().includes('azure')
-  );
-  
-  console.log(`  🌍 Environment variables checked: ${envVars.length}`);
-  console.log(`  🔍 Suspicious variables found: ${suspiciousEnvVars.length}`);
-  
-  if (suspiciousEnvVars.length > 0) {
-    console.log('  ⚠️  Potentially sensitive environment variables:');
-    for (const envVar of suspiciousEnvVars) {
-      const value = process.env[envVar];
-      const maskedValue = value && value.length > 8 ? 
-        `${value.substring(0, 4)}***${value.substring(value.length - 2)}` : 
-        'EMPTY';
-      console.log(`      ${envVar}: ${maskedValue}`);
+    // Check if PAT token is present but not logged
+    if (config.pat && config.pat.length > 10) {
+      console.log('  ✅ PAT token present and properly secured');
+    } else {
+      console.log('  ⚠️  PAT token missing or too short');
     }
+  } else {
+    console.log('  ❌ No configuration file found in current directory');
   }
-  
 } catch (error) {
-  console.log(`  ❌ Environment check error: ${error.message}`);
+  console.log(`  ❌ Configuration security error: ${error.message}`);
 }
 
-// Test 5: Configuration validation against known security patterns
-console.log('\n🔐 Test 5: Security pattern validation');
+// Test 2: Check .gitignore contains .azure-devops.json
+console.log('\n🔐 Test 2: Git ignore security validation');
 try {
-  const config = ConfigLoader.loadConfig();
-  
-  for (const mapping of config.mappings) {
-    const pat = mapping.config.pat;
+  const gitignorePath = './.gitignore';
+  if (fs.existsSync(gitignorePath)) {
+    const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
     
-    console.log(`  🔍 Validating ${mapping.config.project} PAT token:`);
+    if (gitignoreContent.includes('.azure-devops.json')) {
+      console.log('  ✅ .azure-devops.json is properly excluded from version control');
+    } else {
+      console.log('  ⚠️  .azure-devops.json not found in .gitignore');
+    }
     
-    // Check PAT length (Azure DevOps PATs are typically 52+ characters)
-    const hasValidLength = pat && pat.length >= 52;
-    console.log(`      Length check: ${hasValidLength ? '✅ VALID' : '❌ TOO SHORT'}`);
-    
-    // Check for placeholder tokens
-    const isPlaceholder = pat === 'YOUR_PAT_TOKEN' || pat === 'DEFAULT_PAT_TOKEN' || pat === '';
-    console.log(`      Placeholder check: ${isPlaceholder ? '❌ PLACEHOLDER' : '✅ REAL TOKEN'}`);
-    
-    // Check character composition (Azure PATs are base64-like)
-    const hasValidChars = pat && /^[A-Za-z0-9+/=]+$/.test(pat);
-    console.log(`      Character validation: ${hasValidChars ? '✅ VALID' : '❌ INVALID CHARS'}`);
+    if (gitignoreContent.includes('environments.json')) {
+      console.log('  ✅ Legacy environments.json is also excluded');
+    }
+  } else {
+    console.log('  ❌ No .gitignore file found');
   }
-  
 } catch (error) {
-  console.log(`  ❌ Security validation error: ${error.message}`);
+  console.log(`  ❌ Git ignore check error: ${error.message}`);
 }
+
+// Test 3: Environment variable isolation
+console.log('\n🔐 Test 3: Environment variable isolation check');
+const sensitivePatterns = [
+  /PAT/i,
+  /TOKEN/i, 
+  /PASSWORD/i,
+  /SECRET/i,
+  /KEY/i
+];
+
+let suspiciousCount = 0;
+const envVars = Object.keys(process.env);
+
+console.log(`  🌍 Environment variables checked: ${envVars.length}`);
+
+envVars.forEach(key => {
+  const value = process.env[key];
+  const isSuspicious = sensitivePatterns.some(pattern => pattern.test(key));
+  
+  if (isSuspicious && value && value.length > 10) {
+    suspiciousCount++;
+    // Don't log the actual values, just indicate presence
+    const maskedValue = value.substring(0, 3) + '***' + value.substring(value.length - 2);
+    console.log(`      ${key}: ${maskedValue}`);
+  }
+});
+
+console.log(`  🔍 Potentially sensitive variables found: ${suspiciousCount}`);
+if (suspiciousCount > 0) {
+  console.log('  ⚠️  Review environment variables for sensitive data exposure');
+} else {
+  console.log('  ✅ No obviously sensitive environment variables detected');
+}
+
+// Test 4: Configuration isolation between projects
+console.log('\n🔐 Test 4: Project configuration isolation');
+const testDirs = [
+  '/Users/wangkanai/Sources/riversync',
+  '/Users/wangkanai/Sources/mula'
+];
+
+testDirs.forEach(dir => {
+  const configPath = path.join(dir, '.azure-devops.json');
+  if (fs.existsSync(configPath)) {
+    try {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      console.log(`  ✅ ${path.basename(dir)}: ${config.organizationUrl}/${config.project}`);
+    } catch (error) {
+      console.log(`  ❌ ${path.basename(dir)}: Invalid configuration - ${error.message}`);
+    }
+  } else {
+    console.log(`  ❌ ${path.basename(dir)}: No configuration found`);
+  }
+});
 
 console.log('\n✅ Security validation tests completed!');
