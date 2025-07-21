@@ -1,8 +1,8 @@
 {
   "servers": {
-    "azure-devops-mcp-proxy": {
+    "devops-enhanced-mcp": {
       "command": "node",
-      "args": ["/Users/wangkanai/Sources/azure-devops-mcp-proxy/dist/index.js"],
+      "args": ["/Users/wangkanai/Sources/devops-enhanced-mcp/dist/index.js"],
       "env": {},
       "description": "Dynamic Azure DevOps MCP proxy with automatic context switching for RiverSync and Mula projects"
     }

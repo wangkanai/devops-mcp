@@ -1,7 +1,7 @@
 {
-  "name": "azure-devops-mcp-proxy",
+  "name": "devops-enhanced-mcp",
   "version": "1.0.0",
-  "description": "Dynamic Azure DevOps MCP Proxy Server for directory-based environment switching",
+  "description": "Dynamic Azure DevOps MCP Server for directory-based environment switching",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -25,16 +25,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wangkanai/azure-devops-mcp-proxy.git"
+    "url": "git+https://github.com/wangkanai/devops-enhanced-mcp.git"
   },
   "keywords": ["mcp", "azure-devops", "proxy", "dynamic", "environment", "switching"],
   "author": "Sarin Na Wangkanai",
   "license": "MIT",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/wangkanai/azure-devops-mcp-proxy/issues"
+    "url": "https://github.com/wangkanai/devops-enhanced-mcp/issues"
   },
-  "homepage": "https://github.com/wangkanai/azure-devops-mcp-proxy#readme",
+  "homepage": "https://github.com/wangkanai/devops-enhanced-mcp#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.16.0"
   },

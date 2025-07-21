@@ -73,7 +73,7 @@ jobs:
           body: |
             ## 📦 Dependency Updates
             
-            This PR contains automated dependency updates for the azure-devops-mcp-proxy project.
+            This PR contains automated dependency updates for the devops-enhanced-mcp project.
             
             ### Changes Made
             - ✅ Updated npm dependencies to latest patch/minor versions

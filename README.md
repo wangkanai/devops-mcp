@@ -1,6 +1,6 @@
-# Azure DevOps MCP Proxy Server
+# DevOps Enhanced MCP
 
-A dynamic Azure DevOps MCP (Model Context Protocol) proxy server that automatically switches authentication context based on the current working directory. This enables seamless integration with multiple Azure DevOps organizations and projects from a single MCP server.
+A dynamic Azure DevOps MCP (Model Context Protocol) server that automatically switches authentication context based on the current working directory. This enables seamless integration with multiple Azure DevOps organizations and projects from a single MCP server.
 
 ## Features
 
@@ -38,7 +38,7 @@ Each repository should contain a `.azure-devops.json` configuration file:
   "meta": {
     "configVersion": "1.0",
     "lastUpdated": "2025-07-21",
-    "createdBy": "azure-devops-mcp-proxy"
+    "createdBy": "devops-enhanced-mcp"
   }
 }
 ```
@@ -182,7 +182,7 @@ Each repository should contain a `.azure-devops.json` configuration file:
   "meta": {
     "configVersion": "1.0",
     "lastUpdated": "2025-07-21",
-    "createdBy": "azure-devops-mcp-proxy"
+    "createdBy": "devops-enhanced-mcp"
   }
 }
 ```
@@ -274,7 +274,7 @@ The generic validation system uses `validation-config.json`:
 
 ```json
 {
-  "proxyPath": "/Users/wangkanai/Sources/azure-devops-mcp-proxy",
+  "proxyPath": "/Users/wangkanai/Sources/devops-enhanced-mcp",
   "repositories": [
     {
       "name": "RiverSync",
@@ -288,7 +288,7 @@ The generic validation system uses `validation-config.json`:
   "testSettings": {
     "timeoutSeconds": 30,
     "skipInteractive": false,
-    "mcpServerName": "azure-devops-proxy",
+    "mcpServerName": "devops-enhanced-mcp",
     "configFileName": ".azure-devops.json"
   },
   "expectedTools": ["workItems", "repositories", "builds", "pullRequests", "pipelines"]
@@ -374,7 +374,7 @@ This MCP server is designed to work seamlessly with Claude Code for Azure DevOps
 Enable debug logging by setting environment variable:
 
 ```bash
-export DEBUG=azure-devops-mcp-proxy
+export DEBUG=devops-enhanced-mcp
 npm start
 ```
 

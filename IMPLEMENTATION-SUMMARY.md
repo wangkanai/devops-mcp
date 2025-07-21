@@ -25,7 +25,7 @@ Custom MCP (Model Context Protocol) server that provides dynamic Azure DevOps au
 ### **MCP Server Structure**
 
 ```text
-azure-devops-mcp-proxy/
+devops-enhanced-mcp/
 ├── src/
 │   ├── index.ts                 # Main MCP server entry point
 │   ├── directory-detector.ts    # Project context detection
@@ -95,7 +95,7 @@ MCP server configuration for `claude_desktop_config.json`:
 {
   "azure-devops-proxy": {
     "command": "node",
-    "args": ["/Users/wangkanai/Sources/azure-devops-mcp-proxy/dist/index.js"],
+    "args": ["/Users/wangkanai/Sources/devops-enhanced-mcp/dist/index.js"],
     "env": {
       "RIVERSYNC_PAT": "your_riversync_pat_token",
       "MULA_PAT": "your_mula_pat_token"
@@ -206,7 +206,7 @@ cd /Users/wangkanai/Sources/mula
 
 ## 📋 Repository Status
 
-- **GitHub Repository**: <https://github.com/wangkanai/azure-devops-mcp-proxy>
+- **GitHub Repository**: <https://github.com/wangkanai/devops-enhanced-mcp>
 - **Status**: Production Ready & Operational
 - **Security**: GitHub secret scanning compliant
 - **Documentation**: Complete with setup guides and examples

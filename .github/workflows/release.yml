@@ -212,13 +212,13 @@ jobs:
           
           # Create compressed archives
           cd release
-          tar -czf ../azure-devops-mcp-proxy-${VERSION}.tar.gz .
-          zip -r ../azure-devops-mcp-proxy-${VERSION}.zip .
+          tar -czf ../devops-enhanced-mcp-${VERSION}.tar.gz .
+          zip -r ../devops-enhanced-mcp-${VERSION}.zip .
           cd ..
           
           # Generate checksums
-          sha256sum azure-devops-mcp-proxy-${VERSION}.tar.gz > azure-devops-mcp-proxy-${VERSION}.tar.gz.sha256
-          sha256sum azure-devops-mcp-proxy-${VERSION}.zip > azure-devops-mcp-proxy-${VERSION}.zip.sha256
+          sha256sum devops-enhanced-mcp-${VERSION}.tar.gz > devops-enhanced-mcp-${VERSION}.tar.gz.sha256
+          sha256sum devops-enhanced-mcp-${VERSION}.zip > devops-enhanced-mcp-${VERSION}.zip.sha256
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -228,10 +228,10 @@ jobs:
           body: ${{ steps.changelog.outputs.changelog }}
           prerelease: ${{ needs.validate-release.outputs.is-prerelease == 'true' }}
           files: |
-            azure-devops-mcp-proxy-${{ needs.validate-release.outputs.version }}.tar.gz
-            azure-devops-mcp-proxy-${{ needs.validate-release.outputs.version }}.zip
-            azure-devops-mcp-proxy-${{ needs.validate-release.outputs.version }}.tar.gz.sha256
-            azure-devops-mcp-proxy-${{ needs.validate-release.outputs.version }}.zip.sha256
+            devops-enhanced-mcp-${{ needs.validate-release.outputs.version }}.tar.gz
+            devops-enhanced-mcp-${{ needs.validate-release.outputs.version }}.zip
+            devops-enhanced-mcp-${{ needs.validate-release.outputs.version }}.tar.gz.sha256
+            devops-enhanced-mcp-${{ needs.validate-release.outputs.version }}.zip.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

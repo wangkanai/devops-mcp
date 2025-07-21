@@ -181,7 +181,7 @@ export class LocalConfigLoader {
       meta: {
         configVersion: "1.0",
         lastUpdated: new Date().toISOString().split('T')[0],
-        createdBy: "azure-devops-mcp-proxy"
+        createdBy: "devops-enhanced-mcp"
       }
     };
 

@@ -207,15 +207,15 @@ jobs:
 
       - name: Create GitHub Release Assets
         run: |
-          tar -czf azure-devops-mcp-proxy-${{ github.event.release.tag_name }}.tar.gz -C release .
-          zip -r azure-devops-mcp-proxy-${{ github.event.release.tag_name }}.zip release/
+          tar -czf devops-enhanced-mcp-${{ github.event.release.tag_name }}.tar.gz -C release .
+          zip -r devops-enhanced-mcp-${{ github.event.release.tag_name }}.zip release/
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            azure-devops-mcp-proxy-${{ github.event.release.tag_name }}.tar.gz
-            azure-devops-mcp-proxy-${{ github.event.release.tag_name }}.zip
+            devops-enhanced-mcp-${{ github.event.release.tag_name }}.tar.gz
+            devops-enhanced-mcp-${{ github.event.release.tag_name }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

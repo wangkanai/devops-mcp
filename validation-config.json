@@ -1,5 +1,5 @@
 {
-  "proxyPath": "/Users/wangkanai/Sources/azure-devops-mcp-proxy",
+  "proxyPath": "/Users/wangkanai/Sources/devops-enhanced-mcp",
   "repositories": [
     {
       "name": "RiverSync",
@@ -22,7 +22,7 @@
     "timeoutSeconds": 30,
     "skipInteractive": false,
     "verbose": false,
-    "mcpServerName": "azure-devops-proxy",
+    "mcpServerName": "devops-enhanced-mcp",
     "configFileName": ".azure-devops.json"
   },
   "expectedTools": [
