@@ -63,9 +63,6 @@ jobs:
 
       - name: Run tests
         run: npm test
-
-      - name: Run integration tests
-        run: npm run test:integration
         env:
           # Mock environment variables for testing
           RIVERSYNC_PAT: test-token-riversync

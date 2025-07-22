@@ -83,7 +83,9 @@ export class ToolHandlers {
         method,
         headers: {
           'Authorization': `Basic ${Buffer.from(`:${pat}`).toString('base64')}`,
-          'Content-Type': 'application/json',
+          'Content-Type': method === 'PATCH' && endpoint.includes('/wit/workitems/')
+            ? 'application/json-patch+json'
+            : 'application/json',
           'Accept': 'application/json',
           ...(postData && { 'Content-Length': Buffer.byteLength(postData) }),
         },
@@ -224,9 +226,14 @@ export class ToolHandlers {
         });
       }
 
+      // Debug logging to validate the endpoint construction
+      const endpoint = `/wit/workitems/$${args.type}?api-version=7.1`;
+      console.log(`[DEBUG] Creating work item with endpoint: ${endpoint}`);
+      console.log(`[DEBUG] Full URL will be: ${this.currentConfig!.organizationUrl}/${this.currentConfig!.project}/_apis${endpoint}`);
+      
       const result = await this.makeApiRequest(
-        `/wit/workitems/${args.type}?api-version=7.1`,
-        'POST',
+        endpoint,
+        'PATCH',
         operations
       );
 
