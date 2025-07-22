@@ -1,5 +1,8 @@
 environments.json
 
+.kilocode/
+.vscode/
+
 # Dependencies
 node_modules/
 npm-debug.log*
