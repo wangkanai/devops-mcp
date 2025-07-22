@@ -11,7 +11,7 @@ Comprehensive project context for Claude Code to work effectively on the devops-
 **Purpose**: Dynamic Azure DevOps integration with directory-based authentication switching  
 **Status**: 🗄️ **ARCHIVED (2025-07-22)** - Project completed successfully  
 
-**GitHub**: https://github.com/wangkanai/devops-enhanced-mcp  
+**GitHub**: <https://github.com/wangkanai/devops-enhanced-mcp>
 **Achievement**: Complete documentation archive in `ACHIEVED.md`  
 **Features**: Local `.azure-devops.json` configuration, secure PAT tokens, >95% test coverage
 
@@ -132,7 +132,7 @@ const headers = {
 - **API Version**: `7.1` (current stable)
 - **Authentication**: Basic authentication with PAT token
 - **Work Items**: Use `$` prefix before work item type in URLs
-- **HTTP Methods**: 
+- **HTTP Methods**:
   - GET for retrieval operations
   - PATCH for work item creation/updates
   - POST for other creation operations
@@ -324,4 +324,4 @@ node -e "console.log(require('./src/config/azure-config.js'))"
 **Project Status**: Archived (Successfully Completed)  
 **Primary Technologies**: Node.js, TypeScript, MCP Protocol, Azure DevOps REST API  
 **Test Coverage**: >95%  
-**GitHub**: https://github.com/wangkanai/devops-enhanced-mcp
+**GitHub**: <https://github.com/wangkanai/devops-enhanced-mcp>
