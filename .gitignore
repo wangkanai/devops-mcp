@@ -2,6 +2,7 @@ environments.json
 
 .kilocode/
 .vscode/
+.vercel/
 
 # Dependencies
 node_modules/
