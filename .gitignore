@@ -1,5 +1,9 @@
 environments.json
 
+# AI Dependency
+.vercel/
+.kilocode/
+
 # Dependencies
 node_modules/
 npm-debug.log*
