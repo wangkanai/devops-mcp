@@ -3,6 +3,11 @@ environments.json
 # AI Dependency
 .vercel/
 .kilocode/
+.repomixignore
+repomix-output.xml
+repomix-output.json
+repomix-output.md
+repomix-output.log
 
 # Dependencies
 node_modules/

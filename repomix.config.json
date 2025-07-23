@@ -1,0 +1,63 @@
+{
+
+  
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "input": {
+    "maxFileSize": 10485760
+  },
+  "output": {
+    "filePath": "repomix-output.xml",
+    "style": "xml",
+    "parsableStyle": true,
+    "fileSummary": true,
+    "directoryStructure": true,
+    "files": true,
+    "removeComments": true,
+    "removeEmptyLines": true,
+    "compress": true,
+    "topFilesLength": 10,
+    "showLineNumbers": true,
+    "truncateBase64": true,
+    "copyToClipboard": false,
+    "git": {
+      "sortByChanges": true,
+      "sortByChangesMaxCommits": 50,
+      "includeDiffs": false
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js",
+    "tests/**/*.js",
+    "*.json",
+    "*.md",
+    "*.sh",
+    "*.ps1"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "node_modules/**",
+      "dist/**",
+      "coverage/**",
+      "*.log",
+      ".cache/**",
+      ".vscode/**",
+      ".idea/**",
+      "*.tsbuildinfo",
+      ".azure-devops.json",
+      "environments.json",
+      "test-*.js",
+      "validate-*.sh",
+      "validate-*.ps1",
+      "warmup-*.sh"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
+}
