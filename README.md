@@ -1,4 +1,4 @@
-# DevOps Enhanced MCP
+# Azure DevOps MCP
 
 A dynamic Azure DevOps MCP (Model Context Protocol) server that automatically switches authentication context based on the current working directory. This enables seamless integration with multiple Azure DevOps organizations and projects from a single MCP server.
 
