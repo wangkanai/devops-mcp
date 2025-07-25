@@ -219,17 +219,21 @@ describe('MCP Server Integration', () => {
       let errorReceived = false;
       const timeout = setTimeout(() => {
         // If no crash occurs within 2 seconds, the server handled it gracefully
+        server.removeAllListeners('exit');
         expect(errorReceived).toBe(false);
         done();
       }, 2000);
 
-      server.on('exit', (code) => {
+      const exitHandler = (code: number | null) => {
         if (code !== 0) {
           clearTimeout(timeout);
+          server.removeAllListeners('exit');
           errorReceived = true;
           done(new Error('Server crashed on malformed JSON'));
         }
-      });
+      };
+
+      server.on('exit', exitHandler);
     });
 
     it('should handle invalid method requests', async () => {

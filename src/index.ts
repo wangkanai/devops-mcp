@@ -60,13 +60,19 @@ class AzureDevOpsMCPProxy {
 
       // Fallback to environment-based configuration
       console.log('No local configuration found, trying environment-based config...');
-      const envConfig = ConfigLoader.loadConfig();
-      this.directoryDetector = new DirectoryDetector(
-        envConfig.mappings,
-        envConfig.defaultConfig
-      );
-      
-      this.currentConfig = this.directoryDetector.detectConfiguration();
+      try {
+        const envConfig = ConfigLoader.loadConfig();
+        this.directoryDetector = new DirectoryDetector(
+          envConfig.mappings,
+          envConfig.defaultConfig
+        );
+        
+        this.currentConfig = this.directoryDetector.detectConfiguration();
+      } catch (error) {
+        // Environment config file doesn't exist - this is normal in the new system
+        console.log('No environment configuration found - operating in local-only mode');
+        this.currentConfig = null;
+      }
       if (this.currentConfig) {
         this.toolHandlers.setCurrentConfig(this.currentConfig);
         console.log('Azure DevOps MCP Proxy initialized with environment configuration:', {
