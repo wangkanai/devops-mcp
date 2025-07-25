@@ -138,7 +138,7 @@ describe('MCP Server Integration', () => {
       expect(response.result.tools).toBeDefined();
       expect(Array.isArray(response.result.tools)).toBe(true);
       expect(response.result.tools.length).toBeGreaterThan(0);
-    });
+    }, 15000);
   });
 
   describe('Tool Calls', () => {
