@@ -100,7 +100,7 @@ For Claude Desktop users, add this configuration to your MCP settings:
 npm install -g @wangkanai/devops-mcp
 
 # Add to Claude Code MCP
-claude mcp add devops-mcp -- devops-mcp
+claude mcp add devops-mcp -- devops-mcp -y
 ```
 
 #### Development Installation
