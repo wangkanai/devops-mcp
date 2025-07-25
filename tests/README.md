@@ -19,7 +19,7 @@ tests/
 ### **Unit Tests** (`tests/unit/`)
 - **Purpose**: Test individual components in isolation
 - **Scope**: Single class/function testing with mocked dependencies
-- **Files**: 
+- **Files**:
   - `directory-detector.test.js` - Tests DirectoryDetector class logic
 
 ### **Integration Tests** (`tests/integration/`)
