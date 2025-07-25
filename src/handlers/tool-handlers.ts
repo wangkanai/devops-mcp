@@ -33,6 +33,10 @@ export class ToolHandlers {
           return await this.getWorkItems(args || {});
         case 'create-work-item':
           return await this.createWorkItem(args || {});
+        case 'update-work-item':
+          return await this.updateWorkItem(args || {});
+        case 'add-work-item-comment':
+          return await this.addWorkItemComment(args || {});
         case 'get-repositories':
           return await this.getRepositories(args || {});
         case 'get-builds':
@@ -226,6 +230,33 @@ export class ToolHandlers {
         });
       }
 
+      // Support parent relationship during creation
+      if (args.parent) {
+        operations.push({
+          op: 'add',
+          path: '/fields/System.Parent',
+          value: args.parent
+        });
+      }
+
+      // Support iteration path during creation
+      if (args.iterationPath) {
+        operations.push({
+          op: 'add',
+          path: '/fields/System.IterationPath',
+          value: args.iterationPath
+        });
+      }
+
+      // Support state during creation
+      if (args.state) {
+        operations.push({
+          op: 'add',
+          path: '/fields/System.State',
+          value: args.state
+        });
+      }
+
       // Debug logging to validate the endpoint construction
       const endpoint = `/wit/workitems/$${args.type}?api-version=7.1`;
       console.log(`[DEBUG] Creating work item with endpoint: ${endpoint}`);
@@ -247,6 +278,9 @@ export class ToolHandlers {
               title: result.fields['System.Title'],
               type: result.fields['System.WorkItemType'],
               state: result.fields['System.State'],
+              parent: result.fields['System.Parent'],
+              iterationPath: result.fields['System.IterationPath'],
+              assignedTo: result.fields['System.AssignedTo']?.displayName || result.fields['System.AssignedTo'],
               url: result._links.html.href
             }
           }, null, 2),
@@ -254,6 +288,182 @@ export class ToolHandlers {
       };
     } catch (error) {
       throw new Error(`Failed to create work item: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Update an existing work item in Azure DevOps
+   */
+  private async updateWorkItem(args: any): Promise<any> {
+    if (!args.id) {
+      throw new Error('Work item ID is required');
+    }
+
+    if (!args.fields && !args.parent && !args.iterationPath && !args.state && !args.assignedTo && !args.title && !args.description && !args.tags) {
+      throw new Error('At least one field to update must be provided');
+    }
+
+    try {
+      const operations = [];
+
+      // Handle individual field updates
+      if (args.title) {
+        operations.push({
+          op: 'replace',
+          path: '/fields/System.Title',
+          value: args.title
+        });
+      }
+
+      if (args.description) {
+        operations.push({
+          op: 'replace',
+          path: '/fields/System.Description',
+          value: args.description
+        });
+      }
+
+      if (args.state) {
+        operations.push({
+          op: 'replace',
+          path: '/fields/System.State',
+          value: args.state
+        });
+      }
+
+      if (args.assignedTo) {
+        operations.push({
+          op: 'replace',
+          path: '/fields/System.AssignedTo',
+          value: args.assignedTo
+        });
+      }
+
+      if (args.tags) {
+        operations.push({
+          op: 'replace',
+          path: '/fields/System.Tags',
+          value: args.tags
+        });
+      }
+
+      // Handle parent relationship (System.Parent)
+      if (args.parent) {
+        operations.push({
+          op: 'replace',
+          path: '/fields/System.Parent',
+          value: args.parent
+        });
+      }
+
+      // Handle iteration path assignment (System.IterationPath)
+      if (args.iterationPath) {
+        operations.push({
+          op: 'replace',
+          path: '/fields/System.IterationPath',
+          value: args.iterationPath
+        });
+      }
+
+      // Handle generic field updates
+      if (args.fields && typeof args.fields === 'object') {
+        Object.entries(args.fields).forEach(([fieldName, fieldValue]) => {
+          // Ensure field name has proper System. prefix if needed
+          const normalizedFieldName = fieldName.startsWith('System.') ? fieldName : `System.${fieldName}`;
+          operations.push({
+            op: 'replace',
+            path: `/fields/${normalizedFieldName}`,
+            value: fieldValue
+          });
+        });
+      }
+
+      if (operations.length === 0) {
+        throw new Error('No valid update operations specified');
+      }
+
+      // Debug logging to validate the endpoint construction
+      const endpoint = `/wit/workitems/${args.id}?api-version=7.1`;
+      console.log(`[DEBUG] Updating work item ${args.id} with endpoint: ${endpoint}`);
+      console.log(`[DEBUG] Operations:`, JSON.stringify(operations, null, 2));
+      
+      const result = await this.makeApiRequest(
+        endpoint,
+        'PATCH',
+        operations
+      );
+
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify({
+            success: true,
+            workItem: {
+              id: result.id,
+              title: result.fields['System.Title'],
+              type: result.fields['System.WorkItemType'],
+              state: result.fields['System.State'],
+              parent: result.fields['System.Parent'],
+              iterationPath: result.fields['System.IterationPath'],
+              assignedTo: result.fields['System.AssignedTo']?.displayName || result.fields['System.AssignedTo'],
+              url: result._links.html.href
+            },
+            operations: operations.length,
+            message: `Successfully updated work item ${args.id}`
+          }, null, 2),
+        }],
+      };
+    } catch (error) {
+      throw new Error(`Failed to update work item: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Add a comment to an existing work item in Azure DevOps
+   */
+  private async addWorkItemComment(args: any): Promise<any> {
+    if (!args.id) {
+      throw new Error('Work item ID is required');
+    }
+
+    if (!args.comment) {
+      throw new Error('Comment text is required');
+    }
+
+    try {
+      const commentData = {
+        text: args.comment
+      };
+
+      // Debug logging to validate the endpoint construction
+      const endpoint = `/wit/workitems/${args.id}/comments?api-version=7.1`;
+      console.log(`[DEBUG] Adding comment to work item ${args.id} with endpoint: ${endpoint}`);
+      
+      const result = await this.makeApiRequest(
+        endpoint,
+        'POST',
+        commentData
+      );
+
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify({
+            success: true,
+            comment: {
+              id: result.id,
+              workItemId: args.id,
+              text: result.text,
+              createdBy: result.createdBy?.displayName || result.createdBy,
+              createdDate: result.createdDate,
+              url: result.url
+            },
+            message: `Successfully added comment to work item ${args.id}`
+          }, null, 2),
+        }],
+      };
+    } catch (error) {
+      throw new Error(`Failed to add work item comment: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
