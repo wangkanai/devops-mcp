@@ -1,6 +1,6 @@
 {
   "name": "@wangkanai/devops-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Dynamic Azure DevOps MCP Server for directory-based environment switching",
   "main": "dist/index.js",
   "bin": "dist/index.js",
@@ -29,11 +29,11 @@
     "url": "git+https://github.com/wangkanai/devops-mcp.git"
   },
   "keywords": [
-    "mcp", 
-    "azure-devops", 
-    "proxy", 
-    "dynamic", 
-    "environment", 
+    "mcp",
+    "azure-devops",
+    "proxy",
+    "dynamic",
+    "environment",
     "switching",
     "model-context-protocol",
     "claude",
