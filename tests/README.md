@@ -28,22 +28,28 @@ tests/
 - **Files**:
   - `mcp-server.test.js` - Tests MCP protocol compliance and server startup
   - `directory-detection.test.js` - Tests full directory detection workflow
+  - `error-handling.test.js` - Tests error scenarios and fallback mechanisms
+  - `security.test.js` - Tests PAT token security and configuration isolation
 
 ### **End-to-End Tests** (`tests/e2e/`)
-- **Purpose**: Test complete user workflows (future implementation)
-- **Scope**: Full system testing with real Azure DevOps API calls
+- **Purpose**: Test complete user workflows and installation scenarios
+- **Scope**: Full system testing including package installation
+- **Files**:
+  - `installation.test.js` - Tests NPX execution and package installation workflows
 
 ## Running Tests
 
 ### All Tests
 ```bash
-npm test                    # Run unit + integration tests
+npm test                    # Run unit + integration tests (default)
+npm run test:all           # Run unit + integration + e2e tests (comprehensive)
 ```
 
 ### Specific Test Categories
 ```bash
 npm run test:unit          # Run only unit tests
-npm run test:integration   # Run only integration tests
+npm run test:integration   # Run only integration tests  
+npm run test:e2e           # Run only end-to-end tests
 npm run test:watch         # Run tests in watch mode
 ```
 
