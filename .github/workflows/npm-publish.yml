@@ -1,0 +1,99 @@
+name: Publish to NPM
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Type check
+      run: npm run type-check
+      
+    - name: Lint code
+      run: npm run lint
+      
+    - name: Run tests
+      run: npm test
+      
+    - name: Build project
+      run: npm run build
+      
+    - name: Validate MCP
+      run: npm run validate:mcp
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        registry-url: 'https://registry.npmjs.org'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build project
+      run: npm run build
+      
+    - name: Check if version changed
+      id: version-check
+      run: |
+        CURRENT_VERSION=$(node -p "require('./package.json').version")
+        PUBLISHED_VERSION=$(npm view @wangkanai/devops-mcp version 2>/dev/null || echo "0.0.0")
+        echo "current-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+        echo "published-version=$PUBLISHED_VERSION" >> $GITHUB_OUTPUT
+        if [ "$CURRENT_VERSION" != "$PUBLISHED_VERSION" ]; then
+          echo "version-changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "version-changed=false" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Publish to NPM
+      if: steps.version-check.outputs.version-changed == 'true'
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        
+    - name: Create Git tag
+      if: steps.version-check.outputs.version-changed == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git tag v${{ steps.version-check.outputs.current-version }}
+        git push origin v${{ steps.version-check.outputs.current-version }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Skip publish (no version change)
+      if: steps.version-check.outputs.version-changed == 'false'
+      run: |
+        echo "Version ${{ steps.version-check.outputs.current-version }} already published. Skipping npm publish."
