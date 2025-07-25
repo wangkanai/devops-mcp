@@ -227,7 +227,7 @@ describe('MCP Server Integration', () => {
         if (code !== 0) {
           clearTimeout(timeout);
           errorReceived = true;
-          done.fail('Server crashed on malformed JSON');
+          done(new Error('Server crashed on malformed JSON'));
         }
       });
     });
