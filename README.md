@@ -66,7 +66,7 @@ Each repository should contain a `.azure-devops.json` configuration file:
 
 ```bash
 # Install and add to Claude MCP
-claude mcp add devops-mcp -- npx @wangkanai/devops-mcp
+claude mcp add devops-mcp -- npx devops-mcp
 ```
 
 ### Alternative Installation Methods

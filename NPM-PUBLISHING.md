@@ -108,12 +108,12 @@ jobs:
 
 #### Method 1: Direct NPX Installation (Recommended)
 ```bash
-claude mcp add devops-mcp -- npx @wangkanai/devops-mcp
+claude mcp add devops-mcp -- npx devops-mcp
 ```
 
-**Note**: If the above fails with "command not found", use the alternative command:
+**Note**: NPM automatically maps the scoped package `@wangkanai/devops-mcp` to binary name `devops-mcp`. You can also use:
 ```bash
-claude mcp add devops-mcp -- npx devops-mcp
+claude mcp add devops-mcp -- npx @wangkanai/devops-mcp
 ```
 
 #### Method 2: Global Installation

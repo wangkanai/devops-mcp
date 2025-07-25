@@ -1,6 +1,6 @@
 {
   "name": "@wangkanai/devops-mcp",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Dynamic Azure DevOps MCP Server for directory-based environment switching",
   "main": "dist/index.js",
   "bin": "dist/index.js",
@@ -21,7 +21,7 @@
     "format:check": "echo \"Format check passed\"",
     "validate:mcp": "node -e \"console.log('MCP validation passed')\"",
     "audit": "npm audit --audit-level moderate",
-    "prepare": "npm run build",
+    "prepare": "npm run build && chmod +x dist/index.js",
     "postinstall": "echo \"Installation completed successfully\""
   },
   "repository": {
@@ -59,7 +59,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.16.0"
+    "@modelcontextprotocol/sdk": "^1.16.0",
+    "@wangkanai/devops-mcp": "^1.1.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.15",
