@@ -19,13 +19,13 @@ This directory contains historical documentation and validation scripts that wer
 
 The following essential information has been extracted and integrated into the main README.md:
 
-### From ISSUE-14-RESOLUTION.md:
+### From ISSUE-14-RESOLUTION.md
 - NPX command troubleshooting (Issue #14 resolution)
 - Correct installation commands for Claude MCP
 - Technical details about NPM package binary mapping
 - Installation verification steps
 
-### From NPM-PUBLISHING.md:
+### From NPM-PUBLISHING.md
 - Alternative installation methods
 - Claude MCP integration patterns
 - Basic troubleshooting commands
