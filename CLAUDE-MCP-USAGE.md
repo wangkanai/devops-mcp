@@ -6,7 +6,7 @@ Quick reference for using the devops-mcp package with Claude Code.
 
 ### 1. Install and Add to Claude Code
 ```bash
-claude mcp add devops-mcp -- npx @wangkanai/devops-mcp
+claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
 ```
 
 ### 1b. Claude Desktop Installation
@@ -17,7 +17,7 @@ For Claude Desktop users, add this configuration to your MCP settings:
   "mcpServers": {
     "devops-mcp": {
       "command": "npx",
-      "args": ["@wangkanai/devops-mcp"]
+      "args": ["-y", "@wangkanai/devops-mcp"]
     }
   }
 }

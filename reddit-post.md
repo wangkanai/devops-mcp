@@ -44,7 +44,7 @@ Super simple with Claude Code:
 
 ```bash
 # Claude Code - One command installation
-claude mcp add devops-mcp -- npx @wangkanai/devops-mcp
+claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
 ```
 
 **For Claude Desktop users**, add to your MCP config:
@@ -53,7 +53,7 @@ claude mcp add devops-mcp -- npx @wangkanai/devops-mcp
   "mcpServers": {
     "devops-mcp": {
       "command": "npx",
-      "args": ["@wangkanai/devops-mcp"]
+      "args": ["-y", "@wangkanai/devops-mcp"]
     }
   }
 }

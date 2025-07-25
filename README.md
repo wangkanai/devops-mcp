@@ -66,8 +66,10 @@ Each repository should contain a `.azure-devops.json` configuration file:
 
 ```bash
 # Install and add to Claude Code MCP
-claude mcp add devops-mcp -- npx @wangkanai/devops-mcp
+claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
 ```
+
+> **Note**: The `-y` flag automatically accepts the package installation prompt, ensuring smooth non-interactive execution for MCP servers.
 
 ### Claude Desktop Installation
 
@@ -78,7 +80,7 @@ For Claude Desktop users, add this configuration to your MCP settings:
   "mcpServers": {
     "devops-mcp": {
       "command": "npx",
-      "args": ["@wangkanai/devops-mcp"]
+      "args": ["-y", "@wangkanai/devops-mcp"]
     }
   }
 }
