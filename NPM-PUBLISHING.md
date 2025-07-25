@@ -91,7 +91,7 @@ claude mcp add devops-mcp -- npx devops-mcp
 
 **Note**: NPM automatically maps the scoped package `@wangkanai/devops-mcp` to binary name `devops-mcp`. You can also use:
 ```bash
-claude mcp add devops-mcp -- npx @wangkanai/devops-mcp
+claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
 ```
 
 #### Method 2: Global Installation
@@ -109,7 +109,7 @@ claude mcp add devops-mcp -- devops-mcp
 npm install @wangkanai/devops-mcp
 
 # Add to Claude MCP with absolute path
-claude mcp add devops-mcp -- npx @wangkanai/devops-mcp
+claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
 ```
 
 ### Configuration
@@ -157,7 +157,7 @@ chmod 600 .azure-devops.json
 #### 1. Test MCP Server
 ```bash
 # Verify server starts correctly
-npx @wangkanai/devops-mcp
+npx -y @wangkanai/devops-mcp
 
 # Test with Claude Code
 claude mcp list
@@ -267,7 +267,7 @@ claude mcp list
 
 # Remove and re-add server
 claude mcp remove devops-mcp
-claude mcp add devops-mcp -- npx @wangkanai/devops-mcp
+claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
 ```
 
 #### 4. Configuration Issues
@@ -283,7 +283,7 @@ ls -la .azure-devops.json
 ```bash
 # Enable debug logging
 export DEBUG=devops-mcp
-npx @wangkanai/devops-mcp
+npx -y @wangkanai/devops-mcp
 ```
 
 ## 📈 Updates and Versioning
