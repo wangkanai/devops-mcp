@@ -19,7 +19,7 @@ I built `@wangkanai/devops-mcp` - an MCP server that automatically detects which
 
 ## Features That Make Life Better
 
-**🔄 Zero-Configuration Switching**
+### 🔄 Zero-Configuration Switching
 ```bash
 cd ~/projects/company-a     # Auto-switches to Company A's Azure DevOps
 cd ~/projects/company-b     # Auto-switches to Company B's Azure DevOps  
@@ -88,11 +88,13 @@ Since deploying this across my projects:
 
 If you're working with multiple Azure DevOps organizations (consulting, multi-team environments, client work), this eliminates the biggest friction point in Claude Code workflows. Instead of context-switching being a 30-second interruption, it's now completely transparent.
 
-**GitHub**: https://github.com/wangkanai/devops-mcp  
+**GitHub**: <https://github.com/wangkanai/devops-mcp>  
 **NPM**: `@wangkanai/devops-mcp`
 
 ---
 
 **Questions?** Happy to explain the technical implementation or help with setup issues! This was a fun project that solved a real daily annoyance in my workflow.
 
-*Tags: #DevOps #AzureDevOps #Claude #MCP #Automation #WorkflowOptimization*
+## Tags
+
+DevOps, AzureDevOps, Claude, MCP, Automation, WorkflowOptimization
