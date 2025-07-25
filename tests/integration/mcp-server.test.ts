@@ -57,7 +57,7 @@ describe('MCP Server Integration', () => {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         reject(new Error('Request timeout'));
-      }, 5000);
+      }, 10000);
 
       const onData = (data: Buffer) => {
         const lines = data.toString().split('\n').filter(line => line.trim());

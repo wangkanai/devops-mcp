@@ -19,6 +19,14 @@ describe('Installation E2E Tests', () => {
     // Ensure the distribution is built before running e2e tests
     const { execSync } = require('child_process');
     execSync('npm run build', { stdio: 'inherit' });
+    
+    // Ensure the built file has execute permissions
+    const fs = require('fs');
+    const path = require('path');
+    const distPath = path.join(__dirname, '..', '..', 'dist', 'index.js');
+    if (fs.existsSync(distPath)) {
+      execSync(`chmod +x "${distPath}"`, { stdio: 'inherit' });
+    }
   });
 
   const testNpxExecution = (command: string, args: string[], testName: string): Promise<TestResult> => {
