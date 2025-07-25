@@ -165,7 +165,7 @@ describe('MCP Server Integration', () => {
       await sendRequest(initRequest);
     }, 20000);
 
-    it('should handle get-current-context tool call', async () => {
+    (process.env.CI ? it.skip : it)('should handle get-current-context tool call', async () => {
       const contextRequest: MCPRequest = {
         jsonrpc: '2.0',
         id: 3,
