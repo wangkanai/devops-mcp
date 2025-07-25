@@ -228,6 +228,53 @@ git push origin release/v1.x.x
 
 ---
 
+## 📦 **Installation & Setup**
+
+### **Claude Code Installation (Recommended)**
+
+```bash
+# Install and add to Claude Code MCP
+claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
+```
+
+> **Note**: The `-y` flag automatically accepts the package installation prompt, ensuring smooth non-interactive execution for MCP servers.
+
+### **Claude Desktop Installation**
+
+For Claude Desktop users, add this configuration to your MCP settings:
+
+```json
+{
+  "mcpServers": {
+    "devops-mcp": {
+      "command": "npx",
+      "args": ["-y", "@wangkanai/devops-mcp"]
+    }
+  }
+}
+```
+
+**Claude Desktop MCP Settings Location:**
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+### **Project Configuration**
+
+Each repository should contain a `.azure-devops.json` configuration file:
+
+```json
+{
+  "organizationUrl": "https://dev.azure.com/your-org",
+  "project": "YourProject",
+  "pat": "your-pat-token-here",
+  "description": "Azure DevOps configuration for this repository"
+}
+```
+
+**Security**: Add `.azure-devops.json` to your `.gitignore` file to prevent committing PAT tokens.
+
+---
+
 ## 🚀 **Usage Examples**
 
 ### **Basic Work Item Creation**
