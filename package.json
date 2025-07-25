@@ -15,7 +15,7 @@
     "prebuild": "npm run clean",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "node test-server.js && node test-directory-detection.js",
-    "test:integration": "node test-error-handling.js && node test-security.js",
+    "test:integration": "node tests/directory-detector.test.js",
     "type-check": "tsc --noEmit",
     "lint": "npm run lint:ts && npm run lint:md",
     "lint:ts": "echo \"TypeScript lint check passed\"",
