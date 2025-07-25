@@ -1,5 +1,7 @@
 # Azure DevOps MCP
 
+[![npm version](https://badge.fury.io/js/@wangkanai%2Fdevops-mcp.svg)](https://badge.fury.io/js/@wangkanai%2Fdevops-mcp)
+
 A dynamic Azure DevOps MCP (Model Context Protocol) server that automatically switches authentication context based on the current working directory. This enables seamless integration with multiple Azure DevOps organizations and projects from a single MCP server.
 
 ## Features
