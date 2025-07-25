@@ -68,7 +68,7 @@ Each repository should contain a `.azure-devops.json` configuration file:
 
 ```bash
 # Install and add to Claude Code MCP
-claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
+claude mcp add devops-mcp -- -y @wangkanai/devops-mcp
 ```
 
 > **Note**: The `-y` flag automatically accepts the package installation prompt, ensuring smooth non-interactive execution for MCP servers.
@@ -100,7 +100,7 @@ For Claude Desktop users, add this configuration to your MCP settings:
 npm install -g @wangkanai/devops-mcp
 
 # Add to Claude Code MCP
-claude mcp add devops-mcp -- devops-mcp -y
+claude mcp add devops-mcp -- devops-mcp
 ```
 
 #### Development Installation
@@ -425,27 +425,25 @@ This MCP server is designed to work seamlessly with Claude Code for Azure DevOps
 
 ### Common Issues
 
-#### 1. NPX Command Issues (Issue #14 Resolution)
+#### 1. Installation Command Issues (Issue #14 Resolution)
 
-**Problem**: `claude mcp add devops-mcp -- npx @wangkanai/devops-mcp` fails to start server
+**Problem**: Incorrect installation commands that fail to start the server
 
-**Root Cause**: NPM automatically converts scoped package `@wangkanai/devops-mcp` to binary name `devops-mcp`
+**Root Cause**: Outdated documentation showing incorrect command syntax
 
-**Solution**: Use the binary name instead of the full scoped package name:
+**Solution**: Use the correct installation command:
 
 ```bash
 # ✅ Correct (RECOMMENDED)
-claude mcp add devops-mcp -- npx devops-mcp
+claude mcp add devops-mcp -- -y @wangkanai/devops-mcp
 
 # ❌ Incorrect (will fail)
 claude mcp add devops-mcp -- npx @wangkanai/devops-mcp
+claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
 ```
 
 **Alternative working commands**:
 ```bash
-# With auto-accept flag
-claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
-
 # Global installation method
 npm install -g @wangkanai/devops-mcp
 claude mcp add devops-mcp -- devops-mcp
