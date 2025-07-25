@@ -234,7 +234,7 @@ git push origin release/v1.x.x
 
 ```bash
 # Install and add to Claude Code MCP
-claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
+claude mcp add devops-mcp -- -y @wangkanai/devops-mcp
 ```
 
 > **Note**: The `-y` flag automatically accepts the package installation prompt, ensuring smooth non-interactive execution for MCP servers.

@@ -86,12 +86,12 @@ The repository includes automated npm publishing via `.github/workflows/npm-publ
 
 #### Method 1: Direct NPX Installation (Recommended)
 ```bash
-claude mcp add devops-mcp -- npx devops-mcp
+claude mcp add devops-mcp -- devops-mcp
 ```
 
 **Note**: NPM automatically maps the scoped package `@wangkanai/devops-mcp` to binary name `devops-mcp`. You can also use:
 ```bash
-claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
+claude mcp add devops-mcp -- -y @wangkanai/devops-mcp
 ```
 
 #### Method 2: Global Installation
@@ -109,7 +109,7 @@ claude mcp add devops-mcp -- devops-mcp
 npm install @wangkanai/devops-mcp
 
 # Add to Claude MCP with absolute path
-claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
+claude mcp add devops-mcp -- -y @wangkanai/devops-mcp
 ```
 
 ### Configuration
@@ -267,7 +267,7 @@ claude mcp list
 
 # Remove and re-add server
 claude mcp remove devops-mcp
-claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
+claude mcp add devops-mcp -- -y @wangkanai/devops-mcp
 ```
 
 #### 4. Configuration Issues

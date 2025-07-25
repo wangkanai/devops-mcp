@@ -1,5 +1,7 @@
 # Azure DevOps MCP
 
+[![npm version](https://badge.fury.io/js/@wangkanai%2Fdevops-mcp.svg)](https://badge.fury.io/js/@wangkanai%2Fdevops-mcp)
+
 A dynamic Azure DevOps MCP (Model Context Protocol) server that automatically switches authentication context based on the current working directory. This enables seamless integration with multiple Azure DevOps organizations and projects from a single MCP server.
 
 ## Features
@@ -66,7 +68,7 @@ Each repository should contain a `.azure-devops.json` configuration file:
 
 ```bash
 # Install and add to Claude Code MCP
-claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
+claude mcp add devops-mcp -- -y @wangkanai/devops-mcp
 ```
 
 > **Note**: The `-y` flag automatically accepts the package installation prompt, ensuring smooth non-interactive execution for MCP servers.
@@ -423,27 +425,23 @@ This MCP server is designed to work seamlessly with Claude Code for Azure DevOps
 
 ### Common Issues
 
-#### 1. NPX Command Issues (Issue #14 Resolution)
+#### 1. Installation Command Issues (Issue #14 Resolution)
 
-**Problem**: `claude mcp add devops-mcp -- npx @wangkanai/devops-mcp` fails to start server
+**Problem**: Incorrect installation commands that fail to start the server
 
-**Root Cause**: NPM automatically converts scoped package `@wangkanai/devops-mcp` to binary name `devops-mcp`
+**Root Cause**: Outdated documentation showing incorrect command syntax
 
-**Solution**: Use the binary name instead of the full scoped package name:
+**Solution**: Use the correct installation command:
 
 ```bash
 # ✅ Correct (RECOMMENDED)
-claude mcp add devops-mcp -- npx devops-mcp
+claude mcp add devops-mcp -- -y @wangkanai/devops-mcp
 
 # ❌ Incorrect (will fail)
-claude mcp add devops-mcp -- npx @wangkanai/devops-mcp
 ```
 
 **Alternative working commands**:
 ```bash
-# With auto-accept flag
-claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
-
 # Global installation method
 npm install -g @wangkanai/devops-mcp
 claude mcp add devops-mcp -- devops-mcp
@@ -460,8 +458,8 @@ claude mcp add devops-mcp -- devops-mcp
 
 Test your installation with these commands:
 ```bash
-# Test server startup
-npx devops-mcp
+# Test server startup (build and run directly)
+npm run build && node dist/index.js
 
 # Verify MCP integration
 mcp__devops-mcp__get-current-context

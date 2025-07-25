@@ -27,7 +27,7 @@ Complete reference for all MCP (Model Context Protocol) commands available in th
 
 ```bash
 # Claude Code (Recommended)
-claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
+claude mcp add devops-mcp -- -y @wangkanai/devops-mcp
 
 # Claude Desktop - Add to MCP settings
 {
@@ -85,12 +85,12 @@ Your Personal Access Token must have these permissions:
 
 ## 📊 **Command Categories**
 
-| Category | Commands | Purpose |
-|----------|----------|---------|
-| **Work Items** | `get-work-items`, `create-work-item`, `update-work-item`, `add-work-item-comment` | Manage work items and hierarchies |
-| **Repository** | `get-repositories`, `get-pull-requests` | Repository and PR management |
-| **Build & Pipeline** | `get-builds`, `trigger-pipeline`, `get-pipeline-status` | CI/CD operations |
-| **Context** | `get-current-context` | Environment and configuration |
+| Category             | Commands                                                                          | Purpose                           |
+| -------------------- | --------------------------------------------------------------------------------- | --------------------------------- |
+| **Work Items**       | `get-work-items`, `create-work-item`, `update-work-item`, `add-work-item-comment` | Manage work items and hierarchies |
+| **Repository**       | `get-repositories`, `get-pull-requests`                                           | Repository and PR management      |
+| **Build & Pipeline** | `get-builds`, `trigger-pipeline`, `get-pipeline-status`                           | CI/CD operations                  |
+| **Context**          | `get-current-context`                                                             | Environment and configuration     |
 
 ---
 
@@ -102,11 +102,11 @@ Your Personal Access Token must have these permissions:
 
 #### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `wiql` | string | No | Work Item Query Language (WIQL) query |
-| `ids` | number[] | No | Specific work item IDs to retrieve |
-| `fields` | string[] | No | Fields to include in response |
+| Parameter | Type     | Required | Description                           |
+| --------- | -------- | -------- | ------------------------------------- |
+| `wiql`    | string   | No       | Work Item Query Language (WIQL) query |
+| `ids`     | number[] | No       | Specific work item IDs to retrieve    |
+| `fields`  | string[] | No       | Fields to include in response         |
 
 #### Usage Examples
 
@@ -162,16 +162,16 @@ mcp__devops-mcp__get-work-items --wiql "SELECT [System.Id], [System.Title] FROM 
 
 #### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `type` | string | Yes | Work item type (Epic, Feature, User Story, Task, Bug) |
-| `title` | string | Yes | Work item title |
-| `description` | string | No | Work item description |
-| `assignedTo` | string | No | Email of assignee |
-| `tags` | string | No | Semicolon-separated tags |
-| `parent` | number | No | **Parent work item ID for hierarchy** |
-| `iterationPath` | string | No | Sprint assignment (e.g., "ProjectName\\Sprint 1") |
-| `state` | string | No | Initial state (New, Active) |
+| Parameter       | Type   | Required | Description                                           |
+| --------------- | ------ | -------- | ----------------------------------------------------- |
+| `type`          | string | Yes      | Work item type (Epic, Feature, User Story, Task, Bug) |
+| `title`         | string | Yes      | Work item title                                       |
+| `description`   | string | No       | Work item description                                 |
+| `assignedTo`    | string | No       | Email of assignee                                     |
+| `tags`          | string | No       | Semicolon-separated tags                              |
+| `parent`        | number | No       | **Parent work item ID for hierarchy**                 |
+| `iterationPath` | string | No       | Sprint assignment (e.g., "ProjectName\\Sprint 1")     |
+| `state`         | string | No       | Initial state (New, Active)                           |
 
 #### Usage Examples
 
@@ -245,17 +245,17 @@ mcp__devops-mcp__create-work-item \
 
 #### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | number | Yes | Work item ID to update |
-| `title` | string | No | Updated title |
-| `description` | string | No | Updated description |
-| `state` | string | No | New state (Active, Resolved, Closed) |
-| `assignedTo` | string | No | New assignee email |
-| `parent` | number | No | New parent work item ID |
-| `iterationPath` | string | No | New sprint assignment |
-| `tags` | string | No | Updated tags (semicolon-separated) |
-| `fields` | object | No | Generic field updates |
+| Parameter       | Type   | Required | Description                          |
+| --------------- | ------ | -------- | ------------------------------------ |
+| `id`            | number | Yes      | Work item ID to update               |
+| `title`         | string | No       | Updated title                        |
+| `description`   | string | No       | Updated description                  |
+| `state`         | string | No       | New state (Active, Resolved, Closed) |
+| `assignedTo`    | string | No       | New assignee email                   |
+| `parent`        | number | No       | New parent work item ID              |
+| `iterationPath` | string | No       | New sprint assignment                |
+| `tags`          | string | No       | Updated tags (semicolon-separated)   |
+| `fields`        | object | No       | Generic field updates                |
 
 #### Usage Examples
 
@@ -288,13 +288,13 @@ mcp__devops-mcp__update-work-item \
 
 #### Common State Transitions
 
-| Work Item Type | Common States |
-|----------------|---------------|
-| **Epic** | New → Active → Resolved → Closed |
-| **Feature** | New → Active → Resolved → Closed |
+| Work Item Type | Common States                    |
+| -------------- | -------------------------------- |
+| **Epic**       | New → Active → Resolved → Closed |
+| **Feature**    | New → Active → Resolved → Closed |
 | **User Story** | New → Active → Resolved → Closed |
-| **Task** | New → Active → Closed |
-| **Bug** | New → Active → Resolved → Closed |
+| **Task**       | New → Active → Closed            |
+| **Bug**        | New → Active → Resolved → Closed |
 
 ---
 
@@ -304,10 +304,10 @@ mcp__devops-mcp__update-work-item \
 
 #### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | number | Yes | Work item ID |
-| `comment` | string | Yes | Comment text |
+| Parameter | Type   | Required | Description  |
+| --------- | ------ | -------- | ------------ |
+| `id`      | number | Yes      | Work item ID |
+| `comment` | string | Yes      | Comment text |
 
 #### Usage Examples
 
@@ -336,9 +336,9 @@ mcp__devops-mcp__add-work-item-comment \
 
 #### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `includeLinks` | boolean | No | Include repository links |
+| Parameter      | Type    | Required | Description              |
+| -------------- | ------- | -------- | ------------------------ |
+| `includeLinks` | boolean | No       | Include repository links |
 
 #### Usage Examples
 
@@ -375,12 +375,12 @@ mcp__devops-mcp__get-repositories --includeLinks true
 
 #### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `repositoryId` | string | No | Specific repository (default: all) |
-| `status` | string | No | PR status: active, completed, abandoned, all |
-| `createdBy` | string | No | Filter by creator email |
-| `top` | number | No | Number of PRs to return (default: 25) |
+| Parameter      | Type   | Required | Description                                  |
+| -------------- | ------ | -------- | -------------------------------------------- |
+| `repositoryId` | string | No       | Specific repository (default: all)           |
+| `status`       | string | No       | PR status: active, completed, abandoned, all |
+| `createdBy`    | string | No       | Filter by creator email                      |
+| `top`          | number | No       | Number of PRs to return (default: 25)        |
 
 #### Usage Examples
 
@@ -411,10 +411,10 @@ mcp__devops-mcp__get-pull-requests --top 10
 
 #### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `definitionIds` | number[] | No | Specific build definition IDs |
-| `top` | number | No | Number of builds to return |
+| Parameter       | Type     | Required | Description                   |
+| --------------- | -------- | -------- | ----------------------------- |
+| `definitionIds` | number[] | No       | Specific build definition IDs |
+| `top`           | number   | No       | Number of builds to return    |
 
 #### Usage Examples
 
@@ -437,12 +437,12 @@ mcp__devops-mcp__get-builds --top 20
 
 #### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `definitionId` | number | No* | Build definition ID |
-| `definitionName` | string | No* | Build definition name |
-| `sourceBranch` | string | No | Branch to build |
-| `parameters` | object | No | Pipeline parameters |
+| Parameter        | Type   | Required | Description           |
+| ---------------- | ------ | -------- | --------------------- |
+| `definitionId`   | number | No*      | Build definition ID   |
+| `definitionName` | string | No*      | Build definition name |
+| `sourceBranch`   | string | No       | Branch to build       |
+| `parameters`     | object | No       | Pipeline parameters   |
 
 *Either `definitionId` or `definitionName` required
 
@@ -474,11 +474,11 @@ mcp__devops-mcp__trigger-pipeline \
 
 #### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `buildId` | number | No* | Specific build ID |
-| `definitionId` | number | No* | Recent builds for definition |
-| `includeTimeline` | boolean | No | Include detailed timeline |
+| Parameter         | Type    | Required | Description                  |
+| ----------------- | ------- | -------- | ---------------------------- |
+| `buildId`         | number  | No*      | Specific build ID            |
+| `definitionId`    | number  | No*      | Recent builds for definition |
+| `includeTimeline` | boolean | No       | Include detailed timeline    |
 
 *Either `buildId` or `definitionId` required
 
@@ -505,9 +505,9 @@ mcp__devops-mcp__get-pipeline-status --buildId 12345 --includeTimeline true
 
 #### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `directory` | string | No | Directory to check (default: current) |
+| Parameter   | Type   | Required | Description                           |
+| ----------- | ------ | -------- | ------------------------------------- |
+| `directory` | string | No       | Directory to check (default: current) |
 
 #### Usage Examples
 
