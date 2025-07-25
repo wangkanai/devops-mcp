@@ -12,7 +12,7 @@ async function testServer() {
   console.log('Starting Azure DevOps MCP Proxy Server test...');
   
   // Start the server
-  const serverPath = path.join(__dirname, 'dist', 'index.js');
+  const serverPath = path.join(__dirname, '..', '..', 'dist', 'index.js');
   const server = spawn('node', [serverPath], {
     stdio: ['pipe', 'pipe', 'inherit']
   });
