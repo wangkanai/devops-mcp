@@ -62,7 +62,30 @@ Each repository should contain a `.azure-devops.json` configuration file:
 
 ## Installation
 
+### NPM Installation (Recommended)
+
 ```bash
+# Install and add to Claude MCP
+claude mcp add devops-mcp -- npx @wangkanai/devops-mcp
+```
+
+### Alternative Installation Methods
+
+#### Global Installation
+```bash
+# Install globally
+npm install -g @wangkanai/devops-mcp
+
+# Add to Claude MCP
+claude mcp add devops-mcp -- devops-mcp
+```
+
+#### Development Installation
+```bash
+# Clone repository
+git clone https://github.com/wangkanai/devops-mcp.git
+cd devops-mcp
+
 # Install dependencies
 npm install
 
@@ -90,7 +113,9 @@ npm run clean
 
 ### Work Items
 - **get-work-items**: Retrieve work items using WIQL queries or specific IDs
-- **create-work-item**: Create new work items with title, description, assignment, and tags
+- **create-work-item**: Create new work items with title, description, assignment, tags, parent relationships, and iteration paths
+- **update-work-item**: Update existing work items including state, assignments, parent relationships, and iteration paths
+- **add-work-item-comment**: Add comments to existing work items for progress tracking
 
 ### Repositories
 - **get-repositories**: List all repositories in the current project context

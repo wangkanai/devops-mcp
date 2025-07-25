@@ -1,8 +1,11 @@
 {
-  "name": "devops-enhanced-mcp",
+  "name": "@wangkanai/devops-mcp",
   "version": "1.0.0",
   "description": "Dynamic Azure DevOps MCP Server for directory-based environment switching",
   "main": "dist/index.js",
+  "bin": {
+    "devops-mcp": "dist/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
@@ -25,16 +28,38 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wangkanai/devops-enhanced-mcp.git"
+    "url": "git+https://github.com/wangkanai/devops-mcp.git"
   },
-  "keywords": ["mcp", "azure-devops", "proxy", "dynamic", "environment", "switching"],
+  "keywords": [
+    "mcp", 
+    "azure-devops", 
+    "proxy", 
+    "dynamic", 
+    "environment", 
+    "switching",
+    "model-context-protocol",
+    "claude",
+    "work-items",
+    "devops"
+  ],
   "author": "Sarin Na Wangkanai",
   "license": "MIT",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/wangkanai/devops-enhanced-mcp/issues"
+    "url": "https://github.com/wangkanai/devops-mcp/issues"
   },
-  "homepage": "https://github.com/wangkanai/devops-enhanced-mcp#readme",
+  "homepage": "https://github.com/wangkanai/devops-mcp#readme",
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.16.0"
   },
