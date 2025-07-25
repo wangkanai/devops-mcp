@@ -66,41 +66,19 @@ npm info @wangkanai/devops-mcp
 
 ### Automated Publishing with GitHub Actions
 
-Create `.github/workflows/publish.yml`:
+The repository includes automated npm publishing via `.github/workflows/npm-publish.yml`:
 
-```yaml
-name: Publish to NPM
+**Features:**
+- Triggers on push to `main` branch
+- Tests on multiple Node.js versions (18, 20, 22)
+- Only publishes when `package.json` version changes
+- Automatically creates git tags for new versions
+- Comprehensive testing before publishing
 
-on:
-  release:
-    types: [published]
-
-jobs:
-  publish:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          registry-url: 'https://registry.npmjs.org'
-          
-      - name: Install dependencies
-        run: npm ci
-        
-      - name: Build package
-        run: npm run build
-        
-      - name: Run tests
-        run: npm test
-        
-      - name: Publish to NPM
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-```
+**Setup Requirements:**
+1. Add `NPM_TOKEN` secret to repository settings
+2. Update version in `package.json` before pushing to main
+3. Workflow automatically handles the rest
 
 ## 🚀 Using with Claude MCP
 
