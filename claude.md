@@ -1,17 +1,17 @@
-# CLAUDE.md - DevOps Enhanced MCP Project Context
+# CLAUDE.md - DevOps MCP Project Context
 
-Comprehensive project context for Claude Code to work effectively on the devops-enhanced-mcp project.
+Comprehensive project context for Claude Code to work effectively on the devops-mcp project.
 
 ---
 
 ## 📋 Project Overview
 
-### **devops-enhanced-mcp** - Azure DevOps MCP Server
+### **devops-mcp** - Azure DevOps MCP Server
 **Technology**: Node.js, TypeScript, MCP Protocol  
 **Purpose**: Dynamic Azure DevOps integration with directory-based authentication switching  
 **Status**: 🗄️ **ARCHIVED (2025-07-22)** - Project completed successfully  
 
-**GitHub**: <https://github.com/wangkanai/devops-enhanced-mcp>
+**GitHub**: <https://github.com/wangkanai/devops-mcp>
 **Achievement**: Complete documentation archive in `ACHIEVED.md`  
 **Features**: Local `.azure-devops.json` configuration, secure PAT tokens, >95% test coverage
 
@@ -162,20 +162,20 @@ npm run lint
 ### **Testing Commands**
 ```bash
 # Work item creation test
-mcp__devops-enhanced-mcp__create-work-item \
+mcp__devops-mcp__create-work-item \
   --type "Task" \
   --title "Test Work Item" \
   --description "Testing work item creation"
 
 # Get current context
-mcp__devops-enhanced-mcp__get-current-context
+mcp__devops-mcp__get-current-context
 
 # List work items
-mcp__devops-enhanced-mcp__get-work-items
+mcp__devops-mcp__get-work-items
 
 # Repository operations
-mcp__devops-enhanced-mcp__get-repositories
-mcp__devops-enhanced-mcp__get-pull-requests --status "active"
+mcp__devops-mcp__get-repositories
+mcp__devops-mcp__get-pull-requests --status "active"
 ```
 
 ### **Git Workflow**
@@ -219,7 +219,7 @@ git push origin fix/issue-description
 
 ### **Basic Work Item Creation**
 ```bash
-mcp__devops-enhanced-mcp__create-work-item \
+mcp__devops-mcp__create-work-item \
   --type "User Story" \
   --title "Implement new feature" \
   --description "Add functionality for user authentication"
@@ -229,19 +229,19 @@ mcp__devops-enhanced-mcp__create-work-item \
 ```bash
 # Automatically switches context based on directory
 cd /path/to/riversync/project
-mcp__devops-enhanced-mcp__get-current-context
+mcp__devops-mcp__get-current-context
 
 cd /path/to/mula/project  
-mcp__devops-enhanced-mcp__get-current-context
+mcp__devops-mcp__get-current-context
 ```
 
 ### **Repository Operations**
 ```bash
 # List all repositories in current context
-mcp__devops-enhanced-mcp__get-repositories
+mcp__devops-mcp__get-repositories
 
 # Get active pull requests
-mcp__devops-enhanced-mcp__get-pull-requests --status "active"
+mcp__devops-mcp__get-pull-requests --status "active"
 ```
 
 ---
@@ -324,4 +324,4 @@ node -e "console.log(require('./src/config/azure-config.js'))"
 **Project Status**: Archived (Successfully Completed)  
 **Primary Technologies**: Node.js, TypeScript, MCP Protocol, Azure DevOps REST API  
 **Test Coverage**: >95%  
-**GitHub**: <https://github.com/wangkanai/devops-enhanced-mcp>
+**GitHub**: <https://github.com/wangkanai/devops-mcp>

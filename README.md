@@ -38,7 +38,7 @@ Each repository should contain a `.azure-devops.json` configuration file:
   "meta": {
     "configVersion": "1.0",
     "lastUpdated": "2025-07-21",
-    "createdBy": "devops-enhanced-mcp"
+    "createdBy": "devops-mcp"
   }
 }
 ```
@@ -182,7 +182,7 @@ Each repository should contain a `.azure-devops.json` configuration file:
   "meta": {
     "configVersion": "1.0",
     "lastUpdated": "2025-07-21",
-    "createdBy": "devops-enhanced-mcp"
+    "createdBy": "devops-mcp"
   }
 }
 ```
@@ -274,7 +274,7 @@ The generic validation system uses `validation-config.json`:
 
 ```json
 {
-  "proxyPath": "/Users/wangkanai/Sources/devops-enhanced-mcp",
+  "proxyPath": "/Users/wangkanai/Sources/devops-mcp",
   "repositories": [
     {
       "name": "RiverSync",
@@ -288,7 +288,7 @@ The generic validation system uses `validation-config.json`:
   "testSettings": {
     "timeoutSeconds": 30,
     "skipInteractive": false,
-    "mcpServerName": "devops-enhanced-mcp",
+    "mcpServerName": "devops-mcp",
     "configFileName": ".azure-devops.json"
   },
   "expectedTools": ["workItems", "repositories", "builds", "pullRequests", "pipelines"]
@@ -374,7 +374,7 @@ This MCP server is designed to work seamlessly with Claude Code for Azure DevOps
 Enable debug logging by setting environment variable:
 
 ```bash
-export DEBUG=devops-enhanced-mcp
+export DEBUG=devops-mcp
 npm start
 ```
 

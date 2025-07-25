@@ -1,7 +1,7 @@
-# DEVOPS-ENHANCED-MCP PROJECT - ACHIEVEMENT ARCHIVE
+# DEVOPS-MCP PROJECT - ACHIEVEMENT ARCHIVE
 
 **Project Status**: ✅ **COMPLETED & ARCHIVED (2025-07-22)**  
-**GitHub Repository**: <https://github.com/wangkanai/devops-enhanced-mcp>
+**GitHub Repository**: <https://github.com/wangkanai/devops-mcp>
 **Achievement Level**: 🏆 **PRODUCTION SUCCESS** - All objectives exceeded
 
 ---
@@ -65,7 +65,7 @@ Develop a custom MCP (Model Context Protocol) server enabling Claude Code to dyn
 
 ### **MCP Server Structure**
 ```
-devops-enhanced-mcp/
+devops-mcp/
 ├── src/
 │   ├── index.ts                    # Main MCP server entry point
 │   ├── directory-detector.ts       # Intelligent project context detection
@@ -115,9 +115,9 @@ devops-enhanced-mcp/
 ```json
 {
   "mcpServers": {
-    "devops-enhanced-mcp": {
+    "devops-mcp": {
       "command": "node",
-      "args": ["/Users/wangkanai/Sources/devops-enhanced-mcp/dist/index.js"],
+      "args": ["/Users/wangkanai/Sources/devops-mcp/dist/index.js"],
       "description": "Dynamic Azure DevOps MCP Server"
     }
   }
@@ -291,7 +291,7 @@ devops-enhanced-mcp/
 ## 🚀 PRODUCTION DEPLOYMENT STATUS
 
 ### **GitHub Repository**
-- **URL**: <https://github.com/wangkanai/devops-enhanced-mcp>
+- **URL**: <https://github.com/wangkanai/devops-mcp>
 - **Status**: ✅ **PRODUCTION READY & OPERATIONAL**
 - **Security**: ✅ **GITHUB SECRET SCANNING COMPLIANT**
 - **Documentation**: ✅ **COMPLETE with setup guides and examples**
@@ -325,7 +325,7 @@ This achievement archive consolidates and replaces the following scattered docum
 - ✅ SESSION-HANDOFF.md - Research findings
 - ✅ NOTWORKING.md - Failed approaches
 - ✅ SNAPSHOT.md - System snapshots
-- ✅ DEVOPS-ENHANCED-MCP-ARCHIVE.md - Previous archive
+- ✅ DEVOPS-MCP-ARCHIVE.md - Previous archive
 - ✅ MCP-STATUS-ANALYSIS.md - Status analysis
 - ✅ CONTEXT-UPDATE-*.md - Context updates (8 files)
 - ✅ AUTHENTICATION-FIXED.md - Auth resolution
@@ -336,7 +336,7 @@ This achievement archive consolidates and replaces the following scattered docum
 - ✅ DEVOPS.md - DevOps configurations  
 - ✅ mcp/devops-enhanced/COMMANDS.md - API documentation
 
-#### **Repository Documentation (`devops-enhanced-mcp/`)**
+#### **Repository Documentation (`devops-mcp/`)**
 - ✅ IMPLEMENTATION-SUMMARY.md - Implementation details
 - ✅ PRODUCTION-VALIDATION-REPORT.md - Validation results
 - ✅ TASKS.md - Repository tasks
@@ -354,7 +354,7 @@ All critical information from 35+ documentation files has been:
 ## 🎯 PROJECT CONCLUSION
 
 ### **Mission Accomplished**
-The devops-enhanced-mcp project has **successfully achieved all stated objectives** and exceeded performance targets. The custom MCP server provides seamless, secure, and reliable Azure DevOps authentication switching for Claude Code, enabling productive multi-project workflows without manual configuration or restarts.
+The devops-mcp project has **successfully achieved all stated objectives** and exceeded performance targets. The custom MCP server provides seamless, secure, and reliable Azure DevOps authentication switching for Claude Code, enabling productive multi-project workflows without manual configuration or restarts.
 
 ### **Production Ready**
 The solution is **deployed and operational** in production environment with comprehensive validation, security compliance, and performance optimization. Both RiverSync and Mula projects benefit from transparent Azure DevOps integration with complete credential isolation.
@@ -370,7 +370,7 @@ This achievement archive serves as the **definitive reference** for the project,
 **Final Status**: ✅ **COMPLETED & ARCHIVED**  
 **Legacy Impact**: 🏆 **PRODUCTION SUCCESS - All objectives exceeded**
 
-**Repository**: <https://github.com/wangkanai/devops-enhanced-mcp>
-**Archive Location**: `/Users/wangkanai/Sources/devops-enhanced-mcp/ACHIEVED.md`
+**Repository**: <https://github.com/wangkanai/devops-mcp>
+**Archive Location**: `/Users/wangkanai/Sources/devops-mcp/ACHIEVED.md`
 
 🎉 **PROJECT SUCCESSFULLY COMPLETED** 🎉
