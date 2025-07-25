@@ -14,7 +14,7 @@ The Azure DevOps MCP Proxy Server has successfully passed comprehensive validati
 
 **Status**: PASSED ✅
 
-- **Compiled Server**: `/Users/wangkanai/Sources/devops-enhanced-mcp/dist/index.js` exists and is executable
+- **Compiled Server**: `/Users/wangkanai/Sources/devops-mcp/dist/index.js` exists and is executable
 - **TypeScript Compilation**: All source files successfully compiled to JavaScript with source maps
 - **Dependencies**: All required modules properly resolved and bundled
 - **File Structure**: Complete dist/ directory with organized module structure
@@ -45,7 +45,7 @@ dist/
 ```
 Configuration loaded successfully
 Azure DevOps MCP Proxy Server started
-Server Info: devops-enhanced-mcp v1.0.0
+Server Info: devops-mcp v1.0.0
 Protocol Version: 2024-11-05
 ```
 
@@ -53,7 +53,7 @@ Protocol Version: 2024-11-05
 
 **Status**: PASSED ✅
 
-- **Configuration File**: Created `/Users/wangkanai/Sources/devops-enhanced-mcp/config/claude-code-servers.json`
+- **Configuration File**: Created `/Users/wangkanai/Sources/devops-mcp/config/claude-code-servers.json`
 - **Path Validation**: Absolute path correctly specified for dist/index.js
 - **JSON Format**: Valid JSON structure compatible with Claude Code servers configuration
 - **Description**: Clear description for MCP server identification
@@ -63,9 +63,9 @@ Protocol Version: 2024-11-05
 ```json
 {
   "servers": {
-    "devops-enhanced-mcp": {
+    "devops-mcp": {
       "command": "node",
-      "args": ["/Users/wangkanai/Sources/devops-enhanced-mcp/dist/index.js"],
+      "args": ["/Users/wangkanai/Sources/devops-mcp/dist/index.js"],
       "env": {},
       "description": "Dynamic Azure DevOps MCP proxy with automatic context switching for RiverSync and Mula projects"
     }
@@ -202,10 +202,10 @@ All 5 Azure DevOps tools are properly registered with correct schemas:
 1. **Copy Configuration File**:
 
    ```bash
-   cp /Users/wangkanai/Sources/devops-enhanced-mcp/config/claude-code-servers.json ~/.config/claude-code/servers.json
+   cp /Users/wangkanai/Sources/devops-mcp/config/claude-code-servers.json ~/.config/claude-code/servers.json
    ```
 
-2. **Restart Claude Code**: The devops-enhanced-mcp server will be automatically available
+2. **Restart Claude Code**: The devops-mcp server will be automatically available
 
 3. **Verify Installation**: Check that the server appears in Claude Code's MCP server list
 
@@ -214,7 +214,7 @@ All 5 Azure DevOps tools are properly registered with correct schemas:
 1. **Start Server**:
 
    ```bash
-   cd /Users/wangkanai/Sources/devops-enhanced-mcp
+   cd /Users/wangkanai/Sources/devops-mcp
    npm start
    ```
 

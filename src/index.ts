@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * Azure DevOps MCP Proxy Server
  * Main entry point for the dynamic Azure DevOps MCP proxy
@@ -24,7 +25,7 @@ class AzureDevOpsMCPProxy {
   constructor() {
     this.server = new Server(
       {
-        name: 'devops-enhanced-mcp',
+        name: 'devops-mcp',
         version: '1.0.0',
       },
       {

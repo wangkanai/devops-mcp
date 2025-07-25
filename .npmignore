@@ -1,0 +1,42 @@
+# Development files
+src/
+tsconfig.json
+.gitignore
+.git/
+
+# Testing
+test-*.js
+tests/
+
+# Documentation (keep only README.md)
+docs/
+*.md
+!README.md
+
+# Configuration
+.azure-devops.json
+environments.json
+config/
+
+# Development dependencies
+node_modules/
+.npm/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts (keep only dist/)
+*.tgz
+coverage/

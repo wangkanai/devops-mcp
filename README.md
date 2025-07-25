@@ -38,7 +38,7 @@ Each repository should contain a `.azure-devops.json` configuration file:
   "meta": {
     "configVersion": "1.0",
     "lastUpdated": "2025-07-21",
-    "createdBy": "devops-enhanced-mcp"
+    "createdBy": "devops-mcp"
   }
 }
 ```
@@ -62,7 +62,30 @@ Each repository should contain a `.azure-devops.json` configuration file:
 
 ## Installation
 
+### NPM Installation (Recommended)
+
 ```bash
+# Install and add to Claude MCP
+claude mcp add devops-mcp -- npx devops-mcp
+```
+
+### Alternative Installation Methods
+
+#### Global Installation
+```bash
+# Install globally
+npm install -g @wangkanai/devops-mcp
+
+# Add to Claude MCP
+claude mcp add devops-mcp -- devops-mcp
+```
+
+#### Development Installation
+```bash
+# Clone repository
+git clone https://github.com/wangkanai/devops-mcp.git
+cd devops-mcp
+
 # Install dependencies
 npm install
 
@@ -90,7 +113,9 @@ npm run clean
 
 ### Work Items
 - **get-work-items**: Retrieve work items using WIQL queries or specific IDs
-- **create-work-item**: Create new work items with title, description, assignment, and tags
+- **create-work-item**: Create new work items with title, description, assignment, tags, parent relationships, and iteration paths
+- **update-work-item**: Update existing work items including state, assignments, parent relationships, and iteration paths
+- **add-work-item-comment**: Add comments to existing work items for progress tracking
 
 ### Repositories
 - **get-repositories**: List all repositories in the current project context
@@ -182,7 +207,7 @@ Each repository should contain a `.azure-devops.json` configuration file:
   "meta": {
     "configVersion": "1.0",
     "lastUpdated": "2025-07-21",
-    "createdBy": "devops-enhanced-mcp"
+    "createdBy": "devops-mcp"
   }
 }
 ```
@@ -274,7 +299,7 @@ The generic validation system uses `validation-config.json`:
 
 ```json
 {
-  "proxyPath": "/Users/wangkanai/Sources/devops-enhanced-mcp",
+  "proxyPath": "/Users/wangkanai/Sources/devops-mcp",
   "repositories": [
     {
       "name": "RiverSync",
@@ -288,7 +313,7 @@ The generic validation system uses `validation-config.json`:
   "testSettings": {
     "timeoutSeconds": 30,
     "skipInteractive": false,
-    "mcpServerName": "devops-enhanced-mcp",
+    "mcpServerName": "devops-mcp",
     "configFileName": ".azure-devops.json"
   },
   "expectedTools": ["workItems", "repositories", "builds", "pullRequests", "pipelines"]
@@ -374,7 +399,7 @@ This MCP server is designed to work seamlessly with Claude Code for Azure DevOps
 Enable debug logging by setting environment variable:
 
 ```bash
-export DEBUG=devops-enhanced-mcp
+export DEBUG=devops-mcp
 npm start
 ```
 
