@@ -197,13 +197,13 @@ This installation method is the easiest for all users of Visual Studio Code.
 }
 ```
 
-2. Save the file, then click 'Start'.
+1. Save the file, then click 'Start'.
 
   <img src="./docs/media/start-mcp-server.gif" alt="start mcp server" width="250"/>
 
-3. In chat, switch to [Agent Mode](https://code.visualstudio.com/blogs/2025/02/24/introducing-copilot-agent-mode).
-4. Click "Select Tools" and choose the available tools.
-5. We strongly recommend creating a `.github\copilot-instructions.md` in your project and copying the contents from this [copilot-instructions.md](./.github/copilot-instructions.md) file. This will enhance your experience using the Azure DevOps MCP Server with GitHub Copilot Chat.
+1. In chat, switch to [Agent Mode](https://code.visualstudio.com/blogs/2025/02/24/introducing-copilot-agent-mode).
+1. Click "Select Tools" and choose the available tools.
+1. We strongly recommend creating a `.github\copilot-instructions.md` in your project and copying the contents from this [copilot-instructions.md](./.github/copilot-instructions.md) file. This will enhance your experience using the Azure DevOps MCP Server with GitHub Copilot Chat.
 
 #### 🛠️ Install from Source (Dev Mode)
 
@@ -220,7 +220,7 @@ This installation method is recommended for advanced users and contributors who 
 npm install
 ```
 
-3. Edit or add `.vscode/mcp.json`:
+1. Edit or add `.vscode/mcp.json`:
 
 ```json
 {
@@ -241,13 +241,13 @@ npm install
 }
 ```
 
-4. Start the Azure DevOps MCP Server.
+1. Start the Azure DevOps MCP Server.
 
   <img src="./docs/media/start-mcp-server.gif" alt="start mcp server" width="250"/>
 
-5. In chat, switch to [Agent Mode](https://code.visualstudio.com/blogs/2025/02/24/introducing-copilot-agent-mode).
-6. Click "Select Tools" and choose the available tools.
-7. We strongly recommend creating a `.github\copilot-instructions.md` in your project and copying the contents from this [copilot-instructions.md](./.github/copilot-instructions.md) file. This will help you get the best experience using the Azure DevOps MCP Server in GitHub Copilot Chat.
+1. In chat, switch to [Agent Mode](https://code.visualstudio.com/blogs/2025/02/24/introducing-copilot-agent-mode).
+1. Click "Select Tools" and choose the available tools.
+1. We strongly recommend creating a `.github\copilot-instructions.md` in your project and copying the contents from this [copilot-instructions.md](./.github/copilot-instructions.md) file. This will help you get the best experience using the Azure DevOps MCP Server in GitHub Copilot Chat.
 
 See the [How To](./docs/HOWTO.md) section for details.
 
@@ -298,17 +298,17 @@ This installation method is the easiest for all users of Visual Studio 2022.
 }
 ```
 
-2. Save the file.
-3. Add your organization name by clicking on the `input` option.
+1. Save the file.
+1. Add your organization name by clicking on the `input` option.
 
    <img src="./docs/media/start-mcp-server-from-vs.png" alt="start mcp server from visual studio 2022" width="250"/>
 
-4. Open Copilot chat and switch to [Agent Mode](https://learn.microsoft.com/en-us/visualstudio/ide/copilot-agent-mode?view=vs-2022).
-5. Click the "Tools" icon and choose the available tools.
+1. Open Copilot chat and switch to [Agent Mode](https://learn.microsoft.com/en-us/visualstudio/ide/copilot-agent-mode?view=vs-2022).
+1. Click the "Tools" icon and choose the available tools.
 
    <img src="./docs/media/set-tools-from-vs.png" alt="set tools to use in visual studio 2022" width="250"/>
 
-6. We strongly recommend creating a `.github\copilot-instructions.md` in your project and copying the contents from this [copilot-instructions.md](./.github/copilot-instructions.md) file. This will enhance your experience using the Azure DevOps MCP Server with GitHub Copilot Chat.
+1. We strongly recommend creating a `.github\copilot-instructions.md` in your project and copying the contents from this [copilot-instructions.md](./.github/copilot-instructions.md) file. This will enhance your experience using the Azure DevOps MCP Server with GitHub Copilot Chat.
 
 ## 🔦 Usage
 
