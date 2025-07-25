@@ -178,7 +178,9 @@ mcp__devops-mcp__get-repositories
 mcp__devops-mcp__get-pull-requests --status "active"
 ```
 
-### **Git Workflow**
+### **Git Workflow** (Branch Protection Required)
+**Important**: Repository has branch protection rules - all changes to `main` must be made through Pull Requests.
+
 ```bash
 # Create feature branch
 git checkout -b fix/issue-description
@@ -187,9 +189,20 @@ git checkout -b fix/issue-description
 git add .
 git commit -m "fix: description of fix"
 
-# Push and create PR
+# Push and create PR (required - cannot push directly to main)
 git push origin fix/issue-description
+
+# For version releases
+git checkout -b release/v1.x.x
+npm version patch|minor|major
+git push origin release/v1.x.x
+# Create PR to main → merge triggers automated npm publishing
 ```
+
+**Branch Protection Rules**:
+- ❌ **Direct pushes to main**: Blocked
+- ✅ **Pull Request required**: All changes must go through PR review
+- ✅ **Automated publishing**: Merging to main triggers GitHub Action npm publish
 
 ---
 
@@ -264,6 +277,11 @@ mcp__devops-mcp__get-pull-requests --status "active"
 - Check network connectivity to dev.azure.com
 - Verify firewall/proxy settings
 - Confirm MCP server is running and accessible
+
+**Git/GitHub Issues**:
+- **Push rejected to main**: Repository has branch protection - create PR instead
+- **Failed to publish**: Ensure NPM_TOKEN secret is configured in repository settings
+- **Workflow not triggering**: Verify GitHub Action file exists and PR targets main branch
 
 ### **Debug Commands**
 ```bash
