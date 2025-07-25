@@ -4,17 +4,28 @@ Quick reference for using the devops-mcp package with Claude Code.
 
 ## 🚀 Quick Start
 
-### 1. Install and Add to Claude
+### 1. Install and Add to Claude Code
 ```bash
-claude mcp add devops-mcp -- npx devops-mcp
+claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
 ```
 
-**Alternative command** (if you prefer the scoped package reference):
-```bash
-claude mcp add devops-mcp -- npx @wangkanai/devops-mcp
+### 1b. Claude Desktop Installation
+For Claude Desktop users, add this configuration to your MCP settings:
+
+```json
+{
+  "mcpServers": {
+    "devops-mcp": {
+      "command": "npx",
+      "args": ["-y", "@wangkanai/devops-mcp"]
+    }
+  }
+}
 ```
 
-**Note**: NPM automatically maps `@wangkanai/devops-mcp` package to `devops-mcp` binary name.
+**Claude Desktop MCP Settings Location:**
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ### 2. Configure Authentication
 Create `.azure-devops.json` in your project directory:

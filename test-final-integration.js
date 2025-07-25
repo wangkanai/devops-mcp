@@ -77,9 +77,9 @@ async function runTests() {
   if (test1.success && test2.success) {
     console.log('\n🎉 ALL TESTS PASSED! Claude MCP integration should work correctly.');
     console.log('\n💡 Recommended Claude MCP command:');
-    console.log('   claude mcp add devops-mcp -- npx devops-mcp');
+    console.log('   claude mcp add devops-mcp -- npx -y devops-mcp');
     console.log('\n💡 Alternative Claude MCP command:');
-    console.log('   claude mcp add devops-mcp -- npx @wangkanai/devops-mcp');
+    console.log('   claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp');
   } else {
     console.log('\n❌ Some tests failed. Check the output above for details.');
   }
