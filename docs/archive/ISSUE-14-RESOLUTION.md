@@ -14,24 +14,24 @@ The Claude MCP connection failure has been **successfully resolved**. The issue 
 
 ### Recommended Command (TESTED & WORKING)
 ```bash
-claude mcp add devops-mcp -- npx devops-mcp
+claude mcp add devops-mcp -- devops-mcp
 ```
 
 ### Verification Results
 ```
-🧪 Testing: npx devops-mcp
-Command: npx devops-mcp
+🧪 Testing: devops-mcp (after global installation)
+Command: devops-mcp (after global installation)
 ✅ SUCCESS: Server started correctly
 
 📊 Test Results Summary:
-  npx devops-mcp: ✅ PASS
+  devops-mcp (after global installation): ✅ PASS
 ```
 
 ## 📋 Complete Setup Instructions
 
 ### 1. Add to Claude MCP
 ```bash
-claude mcp add devops-mcp -- npx devops-mcp
+claude mcp add devops-mcp -- devops-mcp
 ```
 
 ### 2. Configure Authentication
@@ -55,7 +55,7 @@ mcp__devops-mcp__get-current-context
 - **Package Name**: `@wangkanai/devops-mcp`
 - **Published Version**: 1.0.0 (confirmed working)
 - **Binary Mapping**: NPM automatically creates `devops-mcp` binary from scoped package
-- **Execution**: `npx devops-mcp` works correctly
+- **Execution**: `devops-mcp (after global installation)` works correctly
 
 ### Package.json Configuration
 ```json
@@ -86,7 +86,7 @@ All documentation has been updated to reflect the correct working command:
 ## 🎉 Final Status
 
 - ✅ **Root cause identified**: NPX command mapping issue
-- ✅ **Solution implemented**: Use `npx devops-mcp` instead of `npx @wangkanai/devops-mcp`
+- ✅ **Solution implemented**: Use `devops-mcp (after global installation)` instead of `npx @wangkanai/devops-mcp`
 - ✅ **Testing completed**: Verified working with integration tests
 - ✅ **Documentation updated**: All guides reflect correct commands
 - ✅ **Ready for use**: Claude MCP integration fully functional
@@ -96,7 +96,7 @@ All documentation has been updated to reflect the correct working command:
 When using scoped NPM packages with Claude MCP, use the **binary name** rather than the full scoped package name:
 
 - ❌ `claude mcp add devops-mcp -- npx @wangkanai/devops-mcp` (fails)
-- ✅ `claude mcp add devops-mcp -- npx devops-mcp` (works)
+- ✅ `claude mcp add devops-mcp -- devops-mcp` (works after global install)
 
 ---
 

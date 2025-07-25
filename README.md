@@ -438,8 +438,6 @@ This MCP server is designed to work seamlessly with Claude Code for Azure DevOps
 claude mcp add devops-mcp -- -y @wangkanai/devops-mcp
 
 # ❌ Incorrect (will fail)
-claude mcp add devops-mcp -- npx @wangkanai/devops-mcp
-claude mcp add devops-mcp -- npx -y @wangkanai/devops-mcp
 ```
 
 **Alternative working commands**:
@@ -460,8 +458,8 @@ claude mcp add devops-mcp -- devops-mcp
 
 Test your installation with these commands:
 ```bash
-# Test server startup
-npx devops-mcp
+# Test server startup (build and run directly)
+npm run build && node dist/index.js
 
 # Verify MCP integration
 mcp__devops-mcp__get-current-context
