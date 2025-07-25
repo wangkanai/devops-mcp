@@ -2,7 +2,7 @@
  * Simple integration test for DirectoryDetector
  */
 
-const { DirectoryDetector } = require('../dist/directory-detector.js');
+const { DirectoryDetector } = require('../../dist/directory-detector.js');
 
 async function testDirectoryDetector() {
   console.log('Testing DirectoryDetector...');
