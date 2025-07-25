@@ -132,20 +132,33 @@ npm run clean
 
 ## Available Tools
 
+> **📋 For comprehensive command documentation with detailed examples, see [MCP-COMMANDS.md](./MCP-COMMANDS.md)**
+
 ### Work Items
-- **get-work-items**: Retrieve work items using WIQL queries or specific IDs
-- **create-work-item**: Create new work items with title, description, assignment, tags, parent relationships, and iteration paths
+- **get-work-items**: Retrieve work items using WIQL queries or specific IDs with field selection
+- **create-work-item**: Create new work items with **full hierarchy support** (Epic → Feature → User Story → Task)
 - **update-work-item**: Update existing work items including state, assignments, parent relationships, and iteration paths
 - **add-work-item-comment**: Add comments to existing work items for progress tracking
 
-### Repositories
+### Repositories & Pull Requests
 - **get-repositories**: List all repositories in the current project context
+- **get-pull-requests**: Get pull requests with filtering options (status, creator, repository)
 
-### Builds
-- **get-builds**: Get build definitions and recent build history
+### Builds & Pipelines
+- **get-builds**: Get build definitions and recent build history with filtering
+- **trigger-pipeline**: Trigger build pipelines with parameters and branch selection
+- **get-pipeline-status**: Get detailed build status and timeline information
 
 ### Context Management
 - **get-current-context**: Get current Azure DevOps context based on directory
+
+### 🎯 **Key Features**
+- ✅ **Hierarchical Work Items**: Full Epic → Feature → User Story → Task hierarchy support
+- ✅ **Parent Relationships**: Establish parent-child relationships during work item creation
+- ✅ **WIQL Queries**: Powerful Work Item Query Language support for complex searches
+- ✅ **Sprint Management**: Iteration path assignment and management
+- ✅ **Pipeline Integration**: Trigger builds and monitor deployment status
+- ✅ **Multi-Project Support**: Seamless switching between Azure DevOps organizations
 
 ## Usage Examples
 
