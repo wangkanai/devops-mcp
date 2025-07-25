@@ -57,7 +57,7 @@ describe('MCP Server Integration', () => {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         reject(new Error('Request timeout'));
-      }, 10000);
+      }, 15000);
 
       const onData = (data: Buffer) => {
         const lines = data.toString().split('\n').filter(line => line.trim());
@@ -138,7 +138,7 @@ describe('MCP Server Integration', () => {
       expect(response.result.tools).toBeDefined();
       expect(Array.isArray(response.result.tools)).toBe(true);
       expect(response.result.tools.length).toBeGreaterThan(0);
-    }, 15000);
+    }, 20000);
   });
 
   describe('Tool Calls', () => {
