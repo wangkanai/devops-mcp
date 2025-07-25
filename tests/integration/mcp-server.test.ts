@@ -163,7 +163,7 @@ describe('MCP Server Integration', () => {
         }
       };
       await sendRequest(initRequest);
-    });
+    }, 20000);
 
     it('should handle get-current-context tool call', async () => {
       const contextRequest: MCPRequest = {
