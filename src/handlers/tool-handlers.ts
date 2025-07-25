@@ -230,12 +230,27 @@ export class ToolHandlers {
         });
       }
 
-      // Support parent relationship during creation
+      // Support parent relationship during creation using relations API
       if (args.parent) {
+        // Validate parent ID is a number
+        const parentId = parseInt(args.parent, 10);
+        if (isNaN(parentId) || parentId <= 0) {
+          throw new Error(`Invalid parent work item ID: ${args.parent}. Must be a positive integer.`);
+        }
+        
+        const parentUrl = `${this.currentConfig!.organizationUrl}/${this.currentConfig!.project}/_apis/wit/workItems/${parentId}`;
+        console.log(`[DEBUG] Setting parent relationship to work item ${parentId} using URL: ${parentUrl}`);
+        
         operations.push({
           op: 'add',
-          path: '/fields/System.Parent',
-          value: args.parent
+          path: '/relations/-',
+          value: {
+            rel: 'System.LinkTypes.Hierarchy-Reverse',
+            url: parentUrl,
+            attributes: {
+              comment: `Parent relationship set via MCP create-work-item command`
+            }
+          }
         });
       }
 
@@ -268,6 +283,23 @@ export class ToolHandlers {
         operations
       );
 
+      // Extract parent information from relations
+      let parentInfo = null;
+      if (result.relations && result.relations.length > 0) {
+        const parentRelation = result.relations.find((rel: any) =>
+          rel.rel === 'System.LinkTypes.Hierarchy-Reverse'
+        );
+        if (parentRelation) {
+          // Extract parent ID from URL (e.g., .../workItems/1562 -> 1562)
+          const match = parentRelation.url.match(/workItems\/(\d+)$/);
+          parentInfo = {
+            id: match ? parseInt(match[1], 10) : null,
+            url: parentRelation.url,
+            comment: parentRelation.attributes?.comment
+          };
+        }
+      }
+
       return {
         content: [{
           type: 'text',
@@ -278,11 +310,14 @@ export class ToolHandlers {
               title: result.fields['System.Title'],
               type: result.fields['System.WorkItemType'],
               state: result.fields['System.State'],
-              parent: result.fields['System.Parent'],
+              parent: result.fields['System.Parent'] || parentInfo?.id || null,
+              parentRelation: parentInfo,
               iterationPath: result.fields['System.IterationPath'],
               assignedTo: result.fields['System.AssignedTo']?.displayName || result.fields['System.AssignedTo'],
-              url: result._links.html.href
-            }
+              url: result._links.html.href,
+              relations: result.relations?.length || 0
+            },
+            message: args.parent ? `Work item created with parent relationship to work item ${args.parent}` : 'Work item created successfully'
           }, null, 2),
         }],
       };
@@ -347,12 +382,27 @@ export class ToolHandlers {
         });
       }
 
-      // Handle parent relationship (System.Parent)
+      // Handle parent relationship using relations API
       if (args.parent) {
+        // Validate parent ID is a number
+        const parentId = parseInt(args.parent, 10);
+        if (isNaN(parentId) || parentId <= 0) {
+          throw new Error(`Invalid parent work item ID: ${args.parent}. Must be a positive integer.`);
+        }
+        
+        const parentUrl = `${this.currentConfig!.organizationUrl}/${this.currentConfig!.project}/_apis/wit/workItems/${parentId}`;
+        console.log(`[DEBUG] Setting parent relationship to work item ${parentId} using URL: ${parentUrl}`);
+        
         operations.push({
-          op: 'replace',
-          path: '/fields/System.Parent',
-          value: args.parent
+          op: 'add',
+          path: '/relations/-',
+          value: {
+            rel: 'System.LinkTypes.Hierarchy-Reverse',
+            url: parentUrl,
+            attributes: {
+              comment: `Parent relationship updated via MCP update-work-item command`
+            }
+          }
         });
       }
 
@@ -393,6 +443,23 @@ export class ToolHandlers {
         operations
       );
 
+      // Extract parent information from relations
+      let parentInfo = null;
+      if (result.relations && result.relations.length > 0) {
+        const parentRelation = result.relations.find((rel: any) =>
+          rel.rel === 'System.LinkTypes.Hierarchy-Reverse'
+        );
+        if (parentRelation) {
+          // Extract parent ID from URL (e.g., .../workItems/1562 -> 1562)
+          const match = parentRelation.url.match(/workItems\/(\d+)$/);
+          parentInfo = {
+            id: match ? parseInt(match[1], 10) : null,
+            url: parentRelation.url,
+            comment: parentRelation.attributes?.comment
+          };
+        }
+      }
+
       return {
         content: [{
           type: 'text',
@@ -403,13 +470,15 @@ export class ToolHandlers {
               title: result.fields['System.Title'],
               type: result.fields['System.WorkItemType'],
               state: result.fields['System.State'],
-              parent: result.fields['System.Parent'],
+              parent: result.fields['System.Parent'] || parentInfo?.id || null,
+              parentRelation: parentInfo,
               iterationPath: result.fields['System.IterationPath'],
               assignedTo: result.fields['System.AssignedTo']?.displayName || result.fields['System.AssignedTo'],
-              url: result._links.html.href
+              url: result._links.html.href,
+              relations: result.relations?.length || 0
             },
             operations: operations.length,
-            message: `Successfully updated work item ${args.id}`
+            message: args.parent ? `Work item updated with parent relationship to work item ${args.parent}` : `Successfully updated work item ${args.id}`
           }, null, 2),
         }],
       };
