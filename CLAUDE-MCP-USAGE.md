@@ -9,6 +9,11 @@ Quick reference for using the devops-mcp package with Claude Code.
 claude mcp add devops-mcp -- npx @wangkanai/devops-mcp
 ```
 
+**If the above fails**, try the alternative command:
+```bash
+claude mcp add devops-mcp -- npx devops-mcp
+```
+
 ### 2. Configure Authentication
 Create `.azure-devops.json` in your project directory:
 ```json

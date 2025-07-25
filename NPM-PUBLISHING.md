@@ -111,6 +111,11 @@ jobs:
 claude mcp add devops-mcp -- npx @wangkanai/devops-mcp
 ```
 
+**Note**: If the above fails with "command not found", use the alternative command:
+```bash
+claude mcp add devops-mcp -- npx devops-mcp
+```
+
 #### Method 2: Global Installation
 ```bash
 # Install globally first
