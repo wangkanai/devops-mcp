@@ -71,7 +71,9 @@ describe('Error Handling Integration', () => {
           JSON.parse(content);
         } catch (error) {
           expect(error).toBeInstanceOf(SyntaxError);
-          expect((error as Error).message).toContain('Unexpected token');
+          // Different Node.js versions may have different error message formats
+          const errorMessage = (error as Error).message;
+          expect(errorMessage).toMatch(/(?:Unexpected token|Expected property name)/);
         }
 
       } finally {
