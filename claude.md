@@ -192,9 +192,9 @@ git commit -m "fix: description of fix"
 # Push and create PR (required - cannot push directly to main)
 git push origin fix/issue-description
 
-# For version releases
+# For version releases (semantic versioning: major.minor.patch)
 git checkout -b release/v1.x.x
-npm version patch|minor|major
+npm version patch|minor|major  # Updates to format {major}.{minor}.{patch}
 git push origin release/v1.x.x
 # Create PR to main → merge triggers automated npm publishing
 ```
@@ -368,6 +368,11 @@ node -e "console.log(require('./src/config/azure-config.js'))"
 - **Type Safety**: Leverage TypeScript for all Azure DevOps API interfaces
 - **Testing**: Maintain >95% test coverage for all new features
 - **Documentation**: Update relevant documentation for any changes
+
+### **Versioning Strategy**
+- **Semantic Versioning**: Follow {major}.{minor}.{patch} format
+- **Version Management**: Use `npm version` commands for consistent version updates
+- **Release Process**: Version bumps trigger automated publishing through GitHub Actions
 
 ### **Azure DevOps API Best Practices**
 - **Use PATCH for work item operations** (not POST)
