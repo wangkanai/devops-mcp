@@ -139,8 +139,84 @@ class AzureDevOpsMCPProxy {
                 type: 'string',
                 description: 'Semicolon-separated tags',
               },
+              parent: {
+                type: 'number',
+                description: 'Parent work item ID for establishing hierarchy during creation',
+              },
+              iterationPath: {
+                type: 'string',
+                description: 'Iteration path for sprint assignment (e.g., ProjectName\\Sprint 1)',
+              },
+              state: {
+                type: 'string',
+                description: 'Initial work item state (e.g., New, Active)',
+              },
             },
             required: ['type', 'title'],
+          },
+        },
+        {
+          name: 'update-work-item',
+          description: 'Update an existing work item in Azure DevOps',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'number',
+                description: 'Work item ID to update',
+              },
+              title: {
+                type: 'string',
+                description: 'Updated work item title',
+              },
+              description: {
+                type: 'string',
+                description: 'Updated work item description',
+              },
+              state: {
+                type: 'string',
+                description: 'Updated work item state (e.g., Active, Resolved, Closed)',
+              },
+              assignedTo: {
+                type: 'string',
+                description: 'Email of the person to assign the work item to',
+              },
+              parent: {
+                type: 'number',
+                description: 'Parent work item ID for establishing hierarchy',
+              },
+              iterationPath: {
+                type: 'string',
+                description: 'Iteration path for sprint assignment (e.g., ProjectName\\Sprint 1)',
+              },
+              tags: {
+                type: 'string',
+                description: 'Semicolon-separated tags',
+              },
+              fields: {
+                type: 'object',
+                description: 'Generic field updates as key-value pairs',
+              },
+            },
+            required: ['id'],
+          },
+        },
+        {
+          name: 'add-work-item-comment',
+          description: 'Add a comment to an existing work item in Azure DevOps',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'number',
+                description: 'Work item ID to add comment to',
+              },
+              comment: {
+                type: 'string',
+                description: 'Comment text to add',
+              },
+            },
+            required: ['id', 'comment'],
           },
         },
         {
