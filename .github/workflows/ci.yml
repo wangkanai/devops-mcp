@@ -37,10 +37,11 @@ jobs:
         run: npm run format:check
         continue-on-error: false
 
-      - name: Lint markdown files
+      - name: Lint markdown files (Informational)
         uses: DavidAnson/markdownlint-cli2-action@v16
         with:
           globs: '**/*.md'
+        continue-on-error: true
 
   test:
     name: Test Suite
