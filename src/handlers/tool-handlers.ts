@@ -817,8 +817,8 @@ export class ToolHandlers {
         text: args.comment
       };
 
-      // Use API version 6.0 for comments to avoid preview version issues
-      const endpoint = `/wit/workitems/${args.id}/comments?api-version=6.0`;
+      // Use API version 6.0-preview for comments - required for work item comments endpoint
+      const endpoint = `/wit/workitems/${args.id}/comments?api-version=6.0-preview`;
       console.log(`[DEBUG] Adding comment to work item ${args.id} with endpoint: ${endpoint}`);
       
       const result = await this.makeApiRequest(
