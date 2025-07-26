@@ -92,7 +92,7 @@ Your Personal Access Token must have these permissions:
 | **Work Items**       | `get-work-items`, `create-work-item`, `update-work-item`, `add-work-item-comment` | Manage work items and hierarchies |
 | **Repository**       | `get-repositories`, `get-pull-requests`                                           | Repository and PR management      |
 | **Build & Pipeline** | `get-builds`, `trigger-pipeline`, `get-pipeline-status`                           | CI/CD operations                  |
-| **Context**          | `get-current-context`                                                             | Environment and configuration     |
+| **Context**          | `get-current-context`                                                             | Environment and configuration      |
 
 ---
 
@@ -415,7 +415,7 @@ mcp__devops-mcp__get-pull-requests --top 10
 
 | Parameter       | Type     | Required | Description                   |
 | --------------- | -------- | -------- | ----------------------------- |
-| `definitionIds` | number[] | No       | Specific build definition IDs.   |
+| `definitionIds`  | number[] | No       | Specific build definition IDs   |
 | `top`           | number   | No       | Number of builds to return    |
 
 #### Usage Examples
