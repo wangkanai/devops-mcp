@@ -1,6 +1,7 @@
 /**
  * Tool Handlers for Azure DevOps Operations
  * Implements MCP tool handlers with dynamic environment switching
+ * Enhanced with iteration path TF401347 error fix
  */
 
 import { AzureDevOpsConfig } from '../types/index.js';
@@ -190,7 +191,101 @@ export class ToolHandlers {
   }
 
   /**
-   * Create a new work item in Azure DevOps
+   * Validate if an iteration path exists in the project
+   */
+  private async validateIterationPath(iterationPath: string): Promise<void> {
+    try {
+      // Try multiple approaches to validate iteration path
+      
+      // Approach 1: Get team iterations (most common)
+      try {
+        const iterations = await this.makeApiRequest('/work/teamsettings/iterations?api-version=7.1');
+        
+        const pathExists = iterations.value.some((iteration: any) => {
+          // Check various path formats
+          const possiblePaths = [
+            iteration.path,
+            iteration.name,
+            `${this.currentConfig!.project}\\${iteration.name}`,
+            `${this.currentConfig!.project}/${iteration.name}`,
+            iteration.attributes?.timeFrame?.start ? iteration.path : null
+          ].filter(Boolean);
+          
+          return possiblePaths.some(path => 
+            path === iterationPath || 
+            path?.replace(/\\/g, '/') === iterationPath.replace(/\\/g, '/') ||
+            path?.replace(/\//g, '\\') === iterationPath.replace(/\//g, '\\')
+          );
+        });
+        
+        if (pathExists) {
+          console.log(`[DEBUG] Iteration path '${iterationPath}' validated successfully`);
+          return;
+        }
+      } catch (teamError) {
+        console.log(`[DEBUG] Team iterations query failed, trying project classification nodes: ${teamError instanceof Error ? teamError.message : 'Unknown error'}`);
+      }
+      
+      // Approach 2: Get project classification nodes (fallback)
+      try {
+        const classificationNodes = await this.makeApiRequest('/wit/classificationnodes/iterations?api-version=7.1&$depth=10');
+        
+        const findInNodes = (nodes: any[]): boolean => {
+          for (const node of nodes) {
+            if (node.path === iterationPath || 
+                node.name === iterationPath ||
+                `${this.currentConfig!.project}\\${node.name}` === iterationPath) {
+              return true;
+            }
+            if (node.children && node.children.length > 0) {
+              if (findInNodes(node.children)) {
+                return true;
+              }
+            }
+          }
+          return false;
+        };
+        
+        if (classificationNodes && (findInNodes([classificationNodes]) || (classificationNodes.children && findInNodes(classificationNodes.children)))) {
+          console.log(`[DEBUG] Iteration path '${iterationPath}' validated via classification nodes`);
+          return;
+        }
+      } catch (classificationError) {
+        console.log(`[DEBUG] Classification nodes query failed: ${classificationError instanceof Error ? classificationError.message : 'Unknown error'}`);
+      }
+      
+      // If all validation attempts fail, throw error
+      throw new Error(`Iteration path '${iterationPath}' does not exist in project '${this.currentConfig!.project}'`);
+      
+    } catch (error) {
+      // Re-throw validation errors
+      if (error instanceof Error && error.message.includes('does not exist')) {
+        throw error;
+      }
+      // For other errors, log but don't fail validation (let Azure DevOps handle it)
+      console.log(`[DEBUG] Could not validate iteration path, proceeding with creation attempt: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Update work item iteration path post-creation
+   */
+  private async updateWorkItemIterationPath(workItemId: number, iterationPath: string): Promise<void> {
+    const operations = [{
+      op: 'replace',
+      path: '/fields/System.IterationPath',
+      value: iterationPath
+    }];
+
+    await this.makeApiRequest(
+      `/wit/workitems/${workItemId}?api-version=7.1`,
+      'PATCH',
+      operations
+    );
+  }
+
+  /**
+   * Create a new work item in Azure DevOps with enhanced iteration path handling
    */
   private async createWorkItem(args: any): Promise<any> {
     if (!args.type || !args.title) {
@@ -254,13 +349,28 @@ export class ToolHandlers {
         });
       }
 
-      // Support iteration path during creation
+      // Enhanced iteration path handling with validation and fallback
+      let iterationPathHandled = false;
+      let iterationPathError = null;
+
       if (args.iterationPath) {
-        operations.push({
-          op: 'add',
-          path: '/fields/System.IterationPath',
-          value: args.iterationPath
-        });
+        try {
+          // First, validate if the iteration path exists
+          await this.validateIterationPath(args.iterationPath);
+          
+          // If validation passes, add it to the creation operations
+          operations.push({
+            op: 'add',
+            path: '/fields/System.IterationPath',
+            value: args.iterationPath
+          });
+          iterationPathHandled = true;
+          console.log(`[DEBUG] Iteration path ${args.iterationPath} validated and will be set during creation`);
+        } catch (validationError) {
+          iterationPathError = validationError;
+          console.log(`[DEBUG] Iteration path validation failed: ${validationError instanceof Error ? validationError.message : 'Unknown error'}`);
+          console.log(`[DEBUG] Will attempt to set iteration path after work item creation`);
+        }
       }
 
       // Support state during creation
@@ -277,11 +387,29 @@ export class ToolHandlers {
       console.log(`[DEBUG] Creating work item with endpoint: ${endpoint}`);
       console.log(`[DEBUG] Full URL will be: ${this.currentConfig!.organizationUrl}/${this.currentConfig!.project}/_apis${endpoint}`);
       
+      // Create the work item
       const result = await this.makeApiRequest(
         endpoint,
         'PATCH',
         operations
       );
+
+      // Handle iteration path post-creation if it wasn't set during creation
+      if (args.iterationPath && !iterationPathHandled) {
+        try {
+          console.log(`[DEBUG] Attempting to set iteration path post-creation for work item ${result.id}`);
+          await this.updateWorkItemIterationPath(result.id, args.iterationPath);
+          
+          // Refresh the work item to get updated fields
+          const updatedResult = await this.makeApiRequest(`/wit/workitems/${result.id}?api-version=7.1`);
+          Object.assign(result, updatedResult);
+          
+          console.log(`[DEBUG] Successfully set iteration path post-creation`);
+        } catch (postCreationError) {
+          console.error(`[WARNING] Failed to set iteration path post-creation: ${postCreationError instanceof Error ? postCreationError.message : 'Unknown error'}`);
+          // Don't fail the entire operation, just log the warning
+        }
+      }
 
       // Extract parent information from relations
       let parentInfo = null;
@@ -300,25 +428,41 @@ export class ToolHandlers {
         }
       }
 
+      // Prepare response with enhanced error reporting
+      const response: any = {
+        success: true,
+        workItem: {
+          id: result.id,
+          title: result.fields['System.Title'],
+          type: result.fields['System.WorkItemType'],
+          state: result.fields['System.State'],
+          parent: result.fields['System.Parent'] || parentInfo?.id || null,
+          parentRelation: parentInfo,
+          iterationPath: result.fields['System.IterationPath'],
+          assignedTo: result.fields['System.AssignedTo']?.displayName || result.fields['System.AssignedTo'],
+          url: result._links.html.href,
+          relations: result.relations?.length || 0
+        },
+        message: args.parent ? `Work item created with parent relationship to work item ${args.parent}` : 'Work item created successfully'
+      };
+
+      // Add iteration path handling details to response
+      if (args.iterationPath) {
+        response.iterationPathHandling = {
+          requested: args.iterationPath,
+          setDuringCreation: iterationPathHandled,
+          finalValue: result.fields['System.IterationPath']
+        };
+        
+        if (iterationPathError) {
+          response.iterationPathHandling.validationError = iterationPathError instanceof Error ? iterationPathError.message : 'Unknown validation error';
+        }
+      }
+
       return {
         content: [{
           type: 'text',
-          text: JSON.stringify({
-            success: true,
-            workItem: {
-              id: result.id,
-              title: result.fields['System.Title'],
-              type: result.fields['System.WorkItemType'],
-              state: result.fields['System.State'],
-              parent: result.fields['System.Parent'] || parentInfo?.id || null,
-              parentRelation: parentInfo,
-              iterationPath: result.fields['System.IterationPath'],
-              assignedTo: result.fields['System.AssignedTo']?.displayName || result.fields['System.AssignedTo'],
-              url: result._links.html.href,
-              relations: result.relations?.length || 0
-            },
-            message: args.parent ? `Work item created with parent relationship to work item ${args.parent}` : 'Work item created successfully'
-          }, null, 2),
+          text: JSON.stringify(response, null, 2),
         }],
       };
     } catch (error) {
