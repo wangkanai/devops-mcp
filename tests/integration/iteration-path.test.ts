@@ -28,13 +28,12 @@ describe('Iteration Path Handling', () => {
       // Mock successful validation and creation
       const mockMakeRequest = jest.spyOn(toolHandlers as any, 'makeApiRequest');
       
-      // Mock iteration validation success
+      // Mock classification nodes call (first call in validateIterationPath)
       mockMakeRequest
         .mockResolvedValueOnce({
-          value: [{
-            path: 'TestProject\\Sprint 1',
-            name: 'Sprint 1'
-          }]
+          path: 'TestProject\\Iteration\\Sprint 1',
+          name: 'Sprint 1',
+          children: []
         })
         // Mock work item creation success
         .mockResolvedValueOnce({
@@ -228,14 +227,12 @@ describe('Iteration Path Handling', () => {
     test('should validate iteration path with various path formats', async () => {
       const mockMakeRequest = jest.spyOn(toolHandlers as any, 'makeApiRequest');
       
-      // Mock team iterations with various path formats
+      // Mock classification nodes call (first call in validateIterationPath)
       mockMakeRequest
         .mockResolvedValueOnce({
-          value: [
-            { path: 'TestProject\\Sprint 1', name: 'Sprint 1' },
-            { path: 'TestProject/Sprint 2', name: 'Sprint 2' },
-            { path: 'Sprint 3', name: 'Sprint 3' }
-          ]
+          path: 'TestProject\\Iteration\\Sprint 1',
+          name: 'Sprint 1',
+          children: []
         })
         .mockResolvedValueOnce({
           id: 1238,
@@ -271,14 +268,14 @@ describe('Iteration Path Handling', () => {
   });
 
   describe('validateIterationPath method', () => {
-    test('should validate iteration path using team settings', async () => {
+    test('should validate iteration path using classification nodes', async () => {
       const mockMakeRequest = jest.spyOn(toolHandlers as any, 'makeApiRequest');
       
+      // Mock classification nodes call (first call in validateIterationPath)
       mockMakeRequest.mockResolvedValueOnce({
-        value: [{
-          path: 'TestProject\\Sprint 1',
-          name: 'Sprint 1'
-        }]
+        path: 'TestProject\\Iteration\\Sprint 1',
+        name: 'Sprint 1',
+        children: []
       });
 
       await expect(
@@ -286,17 +283,15 @@ describe('Iteration Path Handling', () => {
       ).resolves.not.toThrow();
     });
 
-    test('should fallback to classification nodes when team settings fail', async () => {
+    test('should fallback to team settings when classification nodes fail', async () => {
       const mockMakeRequest = jest.spyOn(toolHandlers as any, 'makeApiRequest');
       
-      // Team settings fails
+      // Classification nodes fails
       mockMakeRequest
-        .mockRejectedValueOnce(new Error('Team settings API failed'))
-        // Classification nodes succeeds
+        .mockRejectedValueOnce(new Error('Classification nodes API failed'))
+        // Team settings succeeds
         .mockResolvedValueOnce({
-          path: 'TestProject',
-          name: 'TestProject',
-          children: [{
+          value: [{
             path: 'TestProject\\Sprint 1',
             name: 'Sprint 1'
           }]

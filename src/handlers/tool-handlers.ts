@@ -349,16 +349,23 @@ export class ToolHandlers {
         console.log(`[DEBUG] Team iterations query failed: ${teamError instanceof Error ? teamError.message : 'Unknown error'}`);
       }
       
-      // If validation fails, return normalized path but add helpful error message
-      console.log(`[DEBUG] Could not validate iteration path '${iterationPath}', using normalized format '${normalizedPath}'`);
+      // If both validation attempts failed to find the path, it doesn't exist
+      console.log(`[DEBUG] Could not validate iteration path '${iterationPath}', normalized format '${normalizedPath}' does not exist`);
       console.log(`[DEBUG] SUGGESTION: Ensure the iteration '${normalizedPath}' exists in Azure DevOps project settings`);
       console.log(`[DEBUG] Expected format: ProjectName\\Iteration\\SprintName (e.g., '${this.currentConfig!.project}\\Iteration\\Sprint 1')`);
-      return normalizedPath;
+      throw new Error(`Iteration path '${iterationPath}' does not exist in project '${this.currentConfig!.project}'`);
       
     } catch (error) {
-      // For any errors, log and return normalized path
+      // If there was an error that's not related to path validation (e.g., auth, network),
+      // check if it's our custom "doesn't exist" error, if so re-throw it
+      if (error instanceof Error && error.message.includes('does not exist in project')) {
+        throw error;
+      }
+      
+      // For other errors (network, auth, etc.), return normalized path with warning
       const normalizedPath = this.normalizeIterationPath(iterationPath);
-      console.log(`[DEBUG] Validation error, using normalized path: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.log(`[DEBUG] Validation error for path '${iterationPath}': ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.log(`[DEBUG] Using normalized path due to validation service unavailability`);
       return normalizedPath;
     }
   }
