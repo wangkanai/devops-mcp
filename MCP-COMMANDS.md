@@ -43,6 +43,7 @@ claude mcp add devops-mcp -- -y @wangkanai/devops-mcp
 ### Command Syntax
 
 All commands follow the MCP protocol format:
+
 ```bash
 mcp__devops-mcp__<command-name> [--parameter value] [--flag]
 ```
@@ -60,7 +61,7 @@ Create a `.azure-devops.json` file in your repository root:
 ```json
 {
   "organizationUrl": "https://dev.azure.com/your-organization",
-  "project": "YourProjectName", 
+  "project": "YourProjectName",
   "pat": "your-personal-access-token-here",
   "description": "Azure DevOps configuration for this repository"
 }
@@ -76,6 +77,7 @@ echo ".azure-devops.json" >> .gitignore
 ### PAT Token Permissions Required
 
 Your Personal Access Token must have these permissions:
+
 - **Work Items**: Read & Write
 - **Code**: Read (for repositories)
 - **Build**: Read & Execute (for pipelines)
@@ -90,7 +92,7 @@ Your Personal Access Token must have these permissions:
 | **Work Items**       | `get-work-items`, `create-work-item`, `update-work-item`, `add-work-item-comment` | Manage work items and hierarchies |
 | **Repository**       | `get-repositories`, `get-pull-requests`                                           | Repository and PR management      |
 | **Build & Pipeline** | `get-builds`, `trigger-pipeline`, `get-pipeline-status`                           | CI/CD operations                  |
-| **Context**          | `get-current-context`                                                             | Environment and configuration     |
+| **Context**          | `get-current-context`                                                             | Environment and configuration      |
 
 ---
 
@@ -105,8 +107,8 @@ Your Personal Access Token must have these permissions:
 | Parameter | Type     | Required | Description                           |
 | --------- | -------- | -------- | ------------------------------------- |
 | `wiql`    | string   | No       | Work Item Query Language (WIQL) query |
-| `ids`     | number[] | No       | Specific work item IDs to retrieve    |
-| `fields`  | string[] | No       | Fields to include in response         |
+| `ids`     | number[] | No       | Specific work item IDs to retrieve     |
+| `fields`   | string[] | No       | Fields to include in response         |
 
 #### Usage Examples
 
@@ -255,7 +257,7 @@ mcp__devops-mcp__create-work-item \
 | `parent`        | number | No       | New parent work item ID              |
 | `iterationPath` | string | No       | New sprint assignment                |
 | `tags`          | string | No       | Updated tags (semicolon-separated)   |
-| `fields`        | object | No       | Generic field updates                |
+| `fields`         | object | No       | Generic field updates                 |
 
 #### Usage Examples
 
@@ -377,7 +379,7 @@ mcp__devops-mcp__get-repositories --includeLinks true
 
 | Parameter      | Type   | Required | Description                                  |
 | -------------- | ------ | -------- | -------------------------------------------- |
-| `repositoryId` | string | No       | Specific repository (default: all)           |
+| `repositoryId` | string | No       | Specific repository (default: all)            |
 | `status`       | string | No       | PR status: active, completed, abandoned, all |
 | `createdBy`    | string | No       | Filter by creator email                      |
 | `top`          | number | No       | Number of PRs to return (default: 25)        |
@@ -413,7 +415,7 @@ mcp__devops-mcp__get-pull-requests --top 10
 
 | Parameter       | Type     | Required | Description                   |
 | --------------- | -------- | -------- | ----------------------------- |
-| `definitionIds` | number[] | No       | Specific build definition IDs |
+| `definitionIds`  | number[] | No       | Specific build definition IDs   |
 | `top`           | number   | No       | Number of builds to return    |
 
 #### Usage Examples
@@ -439,12 +441,12 @@ mcp__devops-mcp__get-builds --top 20
 
 | Parameter        | Type   | Required | Description           |
 | ---------------- | ------ | -------- | --------------------- |
-| `definitionId`   | number | No*      | Build definition ID   |
-| `definitionName` | string | No*      | Build definition name |
+| `definitionId`    | number | No\*     | Build definition ID    |
+| `definitionName`  | string | No\*     | Build definition name  |
 | `sourceBranch`   | string | No       | Branch to build       |
 | `parameters`     | object | No       | Pipeline parameters   |
 
-*Either `definitionId` or `definitionName` required
+\*Either `definitionId` or `definitionName` required
 
 #### Usage Examples
 
@@ -476,11 +478,11 @@ mcp__devops-mcp__trigger-pipeline \
 
 | Parameter         | Type    | Required | Description                  |
 | ----------------- | ------- | -------- | ---------------------------- |
-| `buildId`         | number  | No*      | Specific build ID            |
-| `definitionId`    | number  | No*      | Recent builds for definition |
+| `buildId`         | number  | No\*     | Specific build ID             |
+| `definitionId`     | number  | No\*     | Recent builds for definition  |
 | `includeTimeline` | boolean | No       | Include detailed timeline    |
 
-*Either `buildId` or `definitionId` required
+\*Either `buildId` or `definitionId` required
 
 #### Usage Examples
 
@@ -543,7 +545,7 @@ echo ".azure-devops.json" >> .gitignore
 
 # Use minimal PAT permissions
 # ✅ Work Items: Read & Write
-# ✅ Code: Read  
+# ✅ Code: Read
 # ✅ Build: Read & Execute
 # ❌ Full Access (unnecessary)
 ```
@@ -565,23 +567,23 @@ Epic (Strategic Initiative)
 
 ```sql
 -- Get work items by state
-SELECT [System.Id], [System.Title] 
-FROM WorkItems 
+SELECT [System.Id], [System.Title]
+FROM WorkItems
 WHERE [System.State] = 'Active'
 
 -- Get work items by assignee
 SELECT [System.Id], [System.Title], [System.AssignedTo]
-FROM WorkItems 
+FROM WorkItems
 WHERE [System.AssignedTo] = 'user@company.com'
 
 -- Get work items in iteration
 SELECT [System.Id], [System.Title]
-FROM WorkItems 
+FROM WorkItems
 WHERE [System.IterationPath] UNDER 'ProjectName\\Sprint 1'
 
 -- Get hierarchy relationships
 SELECT [System.Id], [System.Title], [System.Parent]
-FROM WorkItems 
+FROM WorkItems
 WHERE [System.Parent] = 1234
 ```
 
@@ -699,6 +701,7 @@ mcp__devops-mcp__trigger-pipeline \
 ### 🔧 **Common Issues**
 
 #### **"No Azure DevOps configuration found"**
+
 ```bash
 # Check current context
 mcp__devops-mcp__get-current-context
@@ -711,6 +714,7 @@ cat .azure-devops.json | jq .
 ```
 
 #### **"Authentication failed"**
+
 ```bash
 # Verify PAT token has correct permissions
 # Check token hasn't expired
@@ -718,21 +722,23 @@ cat .azure-devops.json | jq .
 ```
 
 #### **"Work item type not found"**
+
 ```bash
 # Use exact work item types as configured in your Azure DevOps process:
 # Agile Process: Epic, Feature, User Story, Task, Bug
-# Scrum Process: Epic, Feature, Product Backlog Item, Task, Bug  
+# Scrum Process: Epic, Feature, Product Backlog Item, Task, Bug
 # CMMI Process: Epic, Feature, Requirement, Task, Bug
 ```
 
 #### **"Parent relationship failed"**
+
 ```bash
 # Ensure parent work item exists and is accessible
 mcp__devops-mcp__get-work-items --ids [parent_id]
 
 # Verify parent-child relationship is valid:
 # Epic → Feature ✅
-# Feature → User Story ✅  
+# Feature → User Story ✅
 # User Story → Task ✅
 # Task → Epic ❌ (invalid hierarchy)
 ```
@@ -768,4 +774,4 @@ mcp__devops-mcp__get-work-items --wiql "SELECT TOP 1 [System.Id] FROM WorkItems"
 
 ---
 
-*This documentation is designed to help Claude users effectively leverage Azure DevOps integration through the MCP protocol. For issues or feature requests, please visit the GitHub repository.*
+_This documentation is designed to help Claude users effectively leverage Azure DevOps integration through the MCP protocol. For issues or feature requests, please visit the GitHub repository._
