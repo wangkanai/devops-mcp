@@ -4,6 +4,10 @@
 
 A dynamic Azure DevOps MCP (Model Context Protocol) server that automatically switches authentication context based on the current working directory. This enables seamless integration with multiple Azure DevOps organizations and projects from a single MCP server.
 
+<a href="https://glama.ai/mcp/servers/@wangkanai/devops-enhanced-mcp">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@wangkanai/devops-enhanced-mcp/badge" alt="DevOps Enhanced MCP server" />
+</a>
+
 ## Features
 
 - **Local Configuration Files**: Each repository contains `.azure-devops.json` configuration
