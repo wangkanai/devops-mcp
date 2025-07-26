@@ -31,7 +31,7 @@ describe('Iteration Path Handling', () => {
       // Mock classification nodes call (first call in validateIterationPath)
       mockMakeRequest
         .mockResolvedValueOnce({
-          path: 'TestProject\\Iteration\\Sprint 1',
+          path: 'TestProject\\Sprint 1',
           name: 'Sprint 1',
           children: []
         })
@@ -230,7 +230,7 @@ describe('Iteration Path Handling', () => {
       // Mock classification nodes call (first call in validateIterationPath)
       mockMakeRequest
         .mockResolvedValueOnce({
-          path: 'TestProject\\Iteration\\Sprint 1',
+          path: 'TestProject\\Sprint 1',
           name: 'Sprint 1',
           children: []
         })

@@ -192,7 +192,8 @@ export class ToolHandlers {
 
   /**
    * Normalize iteration path format for Azure DevOps API compatibility
-   * Format: ProjectName\Iteration\SprintName
+   * Format: ProjectName\SprintName (NOT ProjectName\Iteration\SprintName)
+   * Azure DevOps REST API expects direct hierarchy without 'Iteration' component
    */
   private normalizeIterationPath(iterationPath: string): string {
     // Remove leading/trailing whitespace
@@ -209,48 +210,38 @@ export class ToolHandlers {
     // Handle different input scenarios
     const projectName = this.currentConfig!.project;
     
-    // Case 1: Already fully qualified (ProjectName\Iteration\SprintName)
-    if (normalized.startsWith(`${projectName}\\Iteration\\`)) {
-      console.log(`[DEBUG] Path already fully qualified: ${normalized}`);
+    // Case 1: Already correct format (ProjectName\SprintName) without Iteration component
+    if (normalized.startsWith(`${projectName}\\`) && !normalized.includes('\\Iteration\\')) {
+      console.log(`[DEBUG] Path already in correct format: ${normalized}`);
       return normalized;
     }
     
-    // Case 2: Has project name but missing Iteration component (ProjectName\SprintName)
-    if (normalized.startsWith(`${projectName}\\`) && !normalized.includes('\\Iteration\\')) {
-      const sprintPart = normalized.substring(projectName.length + 1);
-      normalized = `${projectName}\\Iteration\\${sprintPart}`;
-      console.log(`[DEBUG] Added missing Iteration component: ${normalized}`);
+    // Case 2: Has incorrect Iteration component (ProjectName\Iteration\SprintName) - remove it
+    if (normalized.includes('\\Iteration\\')) {
+      normalized = normalized.replace('\\Iteration\\', '\\');
+      console.log(`[DEBUG] Removed Iteration component from path: ${normalized}`);
       return normalized;
     }
     
     // Case 3: Has Iteration prefix but missing project name (Iteration\SprintName)
     if (normalized.startsWith('Iteration\\')) {
-      normalized = `${projectName}\\${normalized}`;
-      console.log(`[DEBUG] Added project name prefix: ${normalized}`);
+      const sprintPart = normalized.substring('Iteration\\'.length);
+      normalized = `${projectName}\\${sprintPart}`;
+      console.log(`[DEBUG] Replaced Iteration prefix with project name: ${normalized}`);
       return normalized;
     }
     
     // Case 4: Just the sprint name (SprintName or Sprint 3)
     if (!normalized.includes('\\')) {
-      normalized = `${projectName}\\Iteration\\${normalized}`;
-      console.log(`[DEBUG] Full path construction from sprint name: ${normalized}`);
+      normalized = `${projectName}\\${normalized}`;
+      console.log(`[DEBUG] Added project name prefix to sprint: ${normalized}`);
       return normalized;
     }
     
-    // Case 5: Complex path that needs Iteration insertion
-    // Split and reconstruct with proper Iteration placement
-    const parts = normalized.split('\\');
-    if (parts.length >= 2 && parts[0] === projectName && parts[1] !== 'Iteration') {
-      // Insert 'Iteration' as the second component
-      parts.splice(1, 0, 'Iteration');
-      normalized = parts.join('\\');
-      console.log(`[DEBUG] Inserted Iteration component in complex path: ${normalized}`);
-      return normalized;
-    }
-    
-    // Default case: ensure project name and Iteration component
+    // Default case: ensure project name prefix
     if (!normalized.startsWith(projectName)) {
-      normalized = `${projectName}\\Iteration\\${normalized}`;
+      normalized = `${projectName}\\${normalized}`;
+      console.log(`[DEBUG] Added project name prefix: ${normalized}`);
     }
     
     console.log(`[DEBUG] Normalized iteration path from '${iterationPath}' to '${normalized}'`);
@@ -275,12 +266,11 @@ export class ToolHandlers {
             return true;
           }
           
-          // Check alternative path formats including proper Iteration paths
+          // Check alternative path formats (direct hierarchy without Iteration component)
           const alternativePaths = [
             node.path,
             node.name,
             `${this.currentConfig!.project}\\${node.name}`,
-            `${this.currentConfig!.project}\\Iteration\\${node.name}`,
             node.structureType === 'iteration' ? node.path : null
           ].filter(Boolean);
           
@@ -328,9 +318,7 @@ export class ToolHandlers {
             iteration.path,
             iteration.name,
             `${this.currentConfig!.project}\\${iteration.name}`,
-            `${this.currentConfig!.project}\\Iteration\\${iteration.name}`,
-            `${this.currentConfig!.project}/${iteration.name}`,
-            `${this.currentConfig!.project}/Iteration/${iteration.name}`
+            `${this.currentConfig!.project}/${iteration.name}`
           ].filter(Boolean);
           
           return possiblePaths.some(path => 
@@ -352,7 +340,7 @@ export class ToolHandlers {
       // If both validation attempts failed to find the path, it doesn't exist
       console.log(`[DEBUG] Could not validate iteration path '${iterationPath}', normalized format '${normalizedPath}' does not exist`);
       console.log(`[DEBUG] SUGGESTION: Ensure the iteration '${normalizedPath}' exists in Azure DevOps project settings`);
-      console.log(`[DEBUG] Expected format: ProjectName\\Iteration\\SprintName (e.g., '${this.currentConfig!.project}\\Iteration\\Sprint 1')`);
+      console.log(`[DEBUG] Expected format: ProjectName\\SprintName (e.g., '${this.currentConfig!.project}\\Sprint 1')`);
       throw new Error(`Iteration path '${iterationPath}' does not exist in project '${this.currentConfig!.project}'`);
       
     } catch (error) {
