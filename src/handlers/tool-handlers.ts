@@ -191,79 +191,175 @@ export class ToolHandlers {
   }
 
   /**
-   * Validate if an iteration path exists in the project
+   * Normalize iteration path format for Azure DevOps API compatibility
+   * Format: ProjectName\Iteration\SprintName
    */
-  private async validateIterationPath(iterationPath: string): Promise<void> {
+  private normalizeIterationPath(iterationPath: string): string {
+    // Remove leading/trailing whitespace
+    let normalized = iterationPath.trim();
+    
+    // Convert forward slashes to backslashes for consistency with Azure DevOps
+    normalized = normalized.replace(/\//g, '\\');
+    
+    // Remove leading backslash if present
+    if (normalized.startsWith('\\')) {
+      normalized = normalized.substring(1);
+    }
+    
+    // Handle different input scenarios
+    const projectName = this.currentConfig!.project;
+    
+    // Case 1: Already fully qualified (ProjectName\Iteration\SprintName)
+    if (normalized.startsWith(`${projectName}\\Iteration\\`)) {
+      console.log(`[DEBUG] Path already fully qualified: ${normalized}`);
+      return normalized;
+    }
+    
+    // Case 2: Has project name but missing Iteration component (ProjectName\SprintName)
+    if (normalized.startsWith(`${projectName}\\`) && !normalized.includes('\\Iteration\\')) {
+      const sprintPart = normalized.substring(projectName.length + 1);
+      normalized = `${projectName}\\Iteration\\${sprintPart}`;
+      console.log(`[DEBUG] Added missing Iteration component: ${normalized}`);
+      return normalized;
+    }
+    
+    // Case 3: Has Iteration prefix but missing project name (Iteration\SprintName)
+    if (normalized.startsWith('Iteration\\')) {
+      normalized = `${projectName}\\${normalized}`;
+      console.log(`[DEBUG] Added project name prefix: ${normalized}`);
+      return normalized;
+    }
+    
+    // Case 4: Just the sprint name (SprintName or Sprint 3)
+    if (!normalized.includes('\\')) {
+      normalized = `${projectName}\\Iteration\\${normalized}`;
+      console.log(`[DEBUG] Full path construction from sprint name: ${normalized}`);
+      return normalized;
+    }
+    
+    // Case 5: Complex path that needs Iteration insertion
+    // Split and reconstruct with proper Iteration placement
+    const parts = normalized.split('\\');
+    if (parts.length >= 2 && parts[0] === projectName && parts[1] !== 'Iteration') {
+      // Insert 'Iteration' as the second component
+      parts.splice(1, 0, 'Iteration');
+      normalized = parts.join('\\');
+      console.log(`[DEBUG] Inserted Iteration component in complex path: ${normalized}`);
+      return normalized;
+    }
+    
+    // Default case: ensure project name and Iteration component
+    if (!normalized.startsWith(projectName)) {
+      normalized = `${projectName}\\Iteration\\${normalized}`;
+    }
+    
+    console.log(`[DEBUG] Normalized iteration path from '${iterationPath}' to '${normalized}'`);
+    return normalized;
+  }
+
+  /**
+   * Validate if an iteration path exists in the project using improved logic
+   */
+  private async validateIterationPath(iterationPath: string): Promise<string> {
     try {
-      // Try multiple approaches to validate iteration path
+      const normalizedPath = this.normalizeIterationPath(iterationPath);
       
-      // Approach 1: Get team iterations (most common)
-      try {
-        const iterations = await this.makeApiRequest('/work/teamsettings/iterations?api-version=7.1');
-        
-        const pathExists = iterations.value.some((iteration: any) => {
-          // Check various path formats
-          const possiblePaths = [
-            iteration.path,
-            iteration.name,
-            `${this.currentConfig!.project}\\${iteration.name}`,
-            `${this.currentConfig!.project}/${iteration.name}`,
-            iteration.attributes?.timeFrame?.start ? iteration.path : null
-          ].filter(Boolean);
-          
-          return possiblePaths.some(path => 
-            path === iterationPath || 
-            path?.replace(/\\/g, '/') === iterationPath.replace(/\\/g, '/') ||
-            path?.replace(/\//g, '\\') === iterationPath.replace(/\//g, '\\')
-          );
-        });
-        
-        if (pathExists) {
-          console.log(`[DEBUG] Iteration path '${iterationPath}' validated successfully`);
-          return;
-        }
-      } catch (teamError) {
-        console.log(`[DEBUG] Team iterations query failed, trying project classification nodes: ${teamError instanceof Error ? teamError.message : 'Unknown error'}`);
-      }
-      
-      // Approach 2: Get project classification nodes (fallback)
+      // Approach 1: Get project classification nodes with deep traversal
       try {
         const classificationNodes = await this.makeApiRequest('/wit/classificationnodes/iterations?api-version=7.1&$depth=10');
         
-        const findInNodes = (nodes: any[]): boolean => {
-          for (const node of nodes) {
-            if (node.path === iterationPath || 
-                node.name === iterationPath ||
-                `${this.currentConfig!.project}\\${node.name}` === iterationPath) {
+        const findInNodes = (node: any, targetPath: string): boolean => {
+          // Check current node path
+          if (node.path === targetPath) {
+            console.log(`[DEBUG] Found exact path match: ${node.path}`);
+            return true;
+          }
+          
+          // Check alternative path formats including proper Iteration paths
+          const alternativePaths = [
+            node.path,
+            node.name,
+            `${this.currentConfig!.project}\\${node.name}`,
+            `${this.currentConfig!.project}\\Iteration\\${node.name}`,
+            node.structureType === 'iteration' ? node.path : null
+          ].filter(Boolean);
+          
+          for (const altPath of alternativePaths) {
+            if (altPath === targetPath || 
+                altPath?.replace(/\\/g, '/') === targetPath.replace(/\\/g, '/')) {
+              console.log(`[DEBUG] Found alternative path match: ${altPath} -> ${targetPath}`);
               return true;
             }
-            if (node.children && node.children.length > 0) {
-              if (findInNodes(node.children)) {
+          }
+          
+          // Recursively check children
+          if (node.children && node.children.length > 0) {
+            for (const child of node.children) {
+              if (findInNodes(child, targetPath)) {
                 return true;
               }
             }
           }
+          
           return false;
         };
         
-        if (classificationNodes && (findInNodes([classificationNodes]) || (classificationNodes.children && findInNodes(classificationNodes.children)))) {
-          console.log(`[DEBUG] Iteration path '${iterationPath}' validated via classification nodes`);
-          return;
+        if (classificationNodes && findInNodes(classificationNodes, normalizedPath)) {
+          console.log(`[DEBUG] Iteration path '${normalizedPath}' validated successfully`);
+          return normalizedPath;
         }
+        
+        // Also try with original path format
+        if (normalizedPath !== iterationPath && findInNodes(classificationNodes, iterationPath)) {
+          console.log(`[DEBUG] Original iteration path '${iterationPath}' validated successfully`);
+          return iterationPath;
+        }
+        
       } catch (classificationError) {
         console.log(`[DEBUG] Classification nodes query failed: ${classificationError instanceof Error ? classificationError.message : 'Unknown error'}`);
       }
       
-      // If all validation attempts fail, throw error
-      throw new Error(`Iteration path '${iterationPath}' does not exist in project '${this.currentConfig!.project}'`);
+      // Approach 2: Get team iterations (fallback)
+      try {
+        const iterations = await this.makeApiRequest('/work/teamsettings/iterations?api-version=7.1');
+        
+        const pathExists = iterations.value.some((iteration: any) => {
+          const possiblePaths = [
+            iteration.path,
+            iteration.name,
+            `${this.currentConfig!.project}\\${iteration.name}`,
+            `${this.currentConfig!.project}\\Iteration\\${iteration.name}`,
+            `${this.currentConfig!.project}/${iteration.name}`,
+            `${this.currentConfig!.project}/Iteration/${iteration.name}`
+          ].filter(Boolean);
+          
+          return possiblePaths.some(path => 
+            path === normalizedPath || 
+            path === iterationPath ||
+            path?.replace(/\\/g, '/') === normalizedPath.replace(/\\/g, '/') ||
+            path?.replace(/\\/g, '/') === iterationPath.replace(/\\/g, '/')
+          );
+        });
+        
+        if (pathExists) {
+          console.log(`[DEBUG] Iteration path validated via team iterations`);
+          return normalizedPath;
+        }
+      } catch (teamError) {
+        console.log(`[DEBUG] Team iterations query failed: ${teamError instanceof Error ? teamError.message : 'Unknown error'}`);
+      }
+      
+      // If validation fails, return normalized path but add helpful error message
+      console.log(`[DEBUG] Could not validate iteration path '${iterationPath}', using normalized format '${normalizedPath}'`);
+      console.log(`[DEBUG] SUGGESTION: Ensure the iteration '${normalizedPath}' exists in Azure DevOps project settings`);
+      console.log(`[DEBUG] Expected format: ProjectName\\Iteration\\SprintName (e.g., '${this.currentConfig!.project}\\Iteration\\Sprint 1')`);
+      return normalizedPath;
       
     } catch (error) {
-      // Re-throw validation errors
-      if (error instanceof Error && error.message.includes('does not exist')) {
-        throw error;
-      }
-      // For other errors, log but don't fail validation (let Azure DevOps handle it)
-      console.log(`[DEBUG] Could not validate iteration path, proceeding with creation attempt: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      // For any errors, log and return normalized path
+      const normalizedPath = this.normalizeIterationPath(iterationPath);
+      console.log(`[DEBUG] Validation error, using normalized path: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      return normalizedPath;
     }
   }
 
@@ -349,27 +445,29 @@ export class ToolHandlers {
         });
       }
 
-      // Enhanced iteration path handling with validation and fallback
+      // Enhanced iteration path handling with normalization and validation
       let iterationPathHandled = false;
       let iterationPathError = null;
+      let finalIterationPath = null;
 
       if (args.iterationPath) {
         try {
-          // First, validate if the iteration path exists
-          await this.validateIterationPath(args.iterationPath);
+          // Validate and normalize the iteration path
+          finalIterationPath = await this.validateIterationPath(args.iterationPath);
           
-          // If validation passes, add it to the creation operations
+          // Add normalized path to the creation operations
           operations.push({
             op: 'add',
             path: '/fields/System.IterationPath',
-            value: args.iterationPath
+            value: finalIterationPath
           });
           iterationPathHandled = true;
-          console.log(`[DEBUG] Iteration path ${args.iterationPath} validated and will be set during creation`);
+          console.log(`[DEBUG] Iteration path normalized to '${finalIterationPath}' and will be set during creation`);
         } catch (validationError) {
           iterationPathError = validationError;
+          finalIterationPath = this.normalizeIterationPath(args.iterationPath);
           console.log(`[DEBUG] Iteration path validation failed: ${validationError instanceof Error ? validationError.message : 'Unknown error'}`);
-          console.log(`[DEBUG] Will attempt to set iteration path after work item creation`);
+          console.log(`[DEBUG] Will attempt to set normalized path '${finalIterationPath}' after work item creation`);
         }
       }
 
@@ -395,10 +493,10 @@ export class ToolHandlers {
       );
 
       // Handle iteration path post-creation if it wasn't set during creation
-      if (args.iterationPath && !iterationPathHandled) {
+      if (args.iterationPath && !iterationPathHandled && finalIterationPath) {
         try {
-          console.log(`[DEBUG] Attempting to set iteration path post-creation for work item ${result.id}`);
-          await this.updateWorkItemIterationPath(result.id, args.iterationPath);
+          console.log(`[DEBUG] Attempting to set normalized iteration path '${finalIterationPath}' post-creation for work item ${result.id}`);
+          await this.updateWorkItemIterationPath(result.id, finalIterationPath);
           
           // Refresh the work item to get updated fields
           const updatedResult = await this.makeApiRequest(`/wit/workitems/${result.id}?api-version=7.1`);
@@ -450,6 +548,7 @@ export class ToolHandlers {
       if (args.iterationPath) {
         response.iterationPathHandling = {
           requested: args.iterationPath,
+          normalized: finalIterationPath,
           setDuringCreation: iterationPathHandled,
           finalValue: result.fields['System.IterationPath']
         };
@@ -550,13 +649,15 @@ export class ToolHandlers {
         });
       }
 
-      // Handle iteration path assignment (System.IterationPath)
+      // Handle iteration path assignment with normalization (System.IterationPath)
       if (args.iterationPath) {
+        const normalizedIterationPath = this.normalizeIterationPath(args.iterationPath);
         operations.push({
           op: 'replace',
           path: '/fields/System.IterationPath',
-          value: args.iterationPath
+          value: normalizedIterationPath
         });
+        console.log(`[DEBUG] Iteration path normalized from '${args.iterationPath}' to '${normalizedIterationPath}' for update`);
       }
 
       // Handle generic field updates
