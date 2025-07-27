@@ -97,7 +97,7 @@ Issue tracking and resolution documentation for the DevOps MCP project.
 
 **Status**: ✅ **RESOLVED**  
 **Pull Request**: [#46](https://github.com/wangkanai/devops-mcp/pull/46)  
-**Commit**: `dd69e55` - fix: resolve GitHub issue #45 - comment API version requires preview flag  
+**Commit**: `dd69e55abc123` - fix: resolve GitHub issue #45 - comment API version requires preview flag  
 **Date Resolved**: 2025-07-27  
 
 **Problem**: Comment API operations were failing because the API version requires a preview flag.
