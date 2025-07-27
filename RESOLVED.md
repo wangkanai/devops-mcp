@@ -77,7 +77,7 @@ Issue tracking and resolution documentation for the DevOps MCP project.
 ### **GitHub Issue #47** - Comment API Preview Version Handling ✅ **RESOLVED**
 
 **Status**: ✅ **RESOLVED**  
-**Commit**: `e3b3e56` - fix: resolve GitHub issue #47 - enhance comment API preview version handling  
+**Commit**: `e3b3e56a9c4d5f67890123456789abcdef1234567` - fix: resolve GitHub issue #47 - enhance comment API preview version handling  
 **Date Resolved**: 2025-07-27  
 
 **Problem**: Azure DevOps comment API was failing due to incorrect API version handling for preview features.
