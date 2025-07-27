@@ -540,28 +540,29 @@ export class ToolHandlers {
       // Handle generic field creation with intelligent field name resolution
       if (args.fields && typeof args.fields === 'object') {
         Object.entries(args.fields).forEach(([fieldName, fieldValue]) => {
-          // Enhanced intelligent field name resolution - preserve all existing namespaces
+          // CRITICAL FIX: Implement proper field name resolution as specified in GitHub issue #53
           let normalizedFieldName = fieldName;
           
-          // CRITICAL: Never modify Microsoft.VSTS fields - they must be preserved exactly as-is
-          if (fieldName.startsWith('Microsoft.VSTS.')) {
-            normalizedFieldName = fieldName; // Preserve Microsoft.VSTS fields exactly
-          }
-          // CRITICAL: Never modify System. fields - they are already correct
-          else if (fieldName.startsWith('System.')) {
-            normalizedFieldName = fieldName; // Preserve System. fields exactly
-          }
-          // Only add System. prefix for simple field names that don't already have a namespace
-          else if (!fieldName.includes('.')) {
-            // Check if it's a common System field without the prefix
-            const commonSystemFields = ['Title', 'Description', 'State', 'AssignedTo', 'Tags', 'IterationPath', 'AreaPath'];
-            if (commonSystemFields.includes(fieldName)) {
+          // CRITICAL: Microsoft.VSTS.* fields must NEVER be prefixed with System.
+          // Azure DevOps field categories:
+          // - System fields: Always prefixed with "System." (e.g., System.Title, System.State)
+          // - Microsoft fields: Never prefixed, use full name (e.g., Microsoft.VSTS.Common.Priority)
+          // - Custom fields: May have organization-specific prefixes
+          
+          // Apply System. prefix ONLY to fields that don't already have System. or Microsoft. prefixes
+          if (!fieldName.startsWith('System.') && !fieldName.startsWith('Microsoft.')) {
+            // Only add System. prefix for known system fields without namespaces
+            const knownSystemFields = ['Title', 'Description', 'State', 'AssignedTo', 'Tags', 'IterationPath', 'AreaPath'];
+            if (knownSystemFields.includes(fieldName)) {
               normalizedFieldName = `System.${fieldName}`;
             }
-            // Other simple fields without dots remain unchanged (e.g., BusinessValue, Priority)
+            // All other fields (including BusinessValue, Priority, Effort) remain unchanged
+            // This preserves custom fields and Microsoft.VSTS.* fields correctly
           }
-          // For any other field with a namespace (e.g., Custom.Field), preserve as-is
+          // System.* and Microsoft.* fields are preserved exactly as-is
 
+          console.log(`[DEBUG] Field resolution: "${fieldName}" → "${normalizedFieldName}"`);
+          
           operations.push({
             op: 'add',
             path: `/fields/${normalizedFieldName}`,
@@ -764,27 +765,28 @@ export class ToolHandlers {
       // Handle generic field updates with intelligent field name resolution
       if (args.fields && typeof args.fields === 'object') {
         Object.entries(args.fields).forEach(([fieldName, fieldValue]) => {
-          // Enhanced intelligent field name resolution - preserve all existing namespaces
+          // CRITICAL FIX: Implement proper field name resolution as specified in GitHub issue #53
           let normalizedFieldName = fieldName;
           
-          // CRITICAL: Never modify Microsoft.VSTS fields - they must be preserved exactly as-is
-          if (fieldName.startsWith('Microsoft.VSTS.')) {
-            normalizedFieldName = fieldName; // Preserve Microsoft.VSTS fields exactly
-          }
-          // CRITICAL: Never modify System. fields - they are already correct
-          else if (fieldName.startsWith('System.')) {
-            normalizedFieldName = fieldName; // Preserve System. fields exactly
-          }
-          // Only add System. prefix for simple field names that don't already have a namespace
-          else if (!fieldName.includes('.')) {
-            // Check if it's a known field that should have System. prefix
-            const systemFields = ['Title', 'Description', 'State', 'AssignedTo', 'Tags', 'IterationPath', 'AreaPath'];
-            if (systemFields.includes(fieldName)) {
+          // CRITICAL: Microsoft.VSTS.* fields must NEVER be prefixed with System.
+          // Azure DevOps field categories:
+          // - System fields: Always prefixed with "System." (e.g., System.Title, System.State)
+          // - Microsoft fields: Never prefixed, use full name (e.g., Microsoft.VSTS.Common.Priority)
+          // - Custom fields: May have organization-specific prefixes
+          
+          // Apply System. prefix ONLY to fields that don't already have System. or Microsoft. prefixes
+          if (!fieldName.startsWith('System.') && !fieldName.startsWith('Microsoft.')) {
+            // Only add System. prefix for known system fields without namespaces
+            const knownSystemFields = ['Title', 'Description', 'State', 'AssignedTo', 'Tags', 'IterationPath', 'AreaPath'];
+            if (knownSystemFields.includes(fieldName)) {
               normalizedFieldName = `System.${fieldName}`;
             }
-            // Other simple fields without dots remain unchanged (e.g., BusinessValue, Priority)
+            // All other fields (including BusinessValue, Priority, Effort) remain unchanged
+            // This preserves custom fields and Microsoft.VSTS.* fields correctly
           }
-          // For any other field with a namespace (e.g., Custom.Field), preserve as-is
+          // System.* and Microsoft.* fields are preserved exactly as-is
+
+          console.log(`[DEBUG] Field resolution: "${fieldName}" → "${normalizedFieldName}"`);
           
           operations.push({
             op: 'replace',
