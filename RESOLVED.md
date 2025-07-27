@@ -19,7 +19,7 @@ Issue tracking and resolution documentation for the DevOps MCP project.
 
 **Status**: ✅ **RESOLVED**  
 **Pull Request**: [#54](https://github.com/wangkanai/devops-mcp/pull/54)  
-**Commit**: `48ed08c1234567890abcdef` - fix: CRITICAL - resolve GitHub issue #53 - Microsoft.VSTS field resolution bug  
+**Commit**: [`48ed08c595ab5f7360650a225f4c683ebd294d63`](https://github.com/wangkanai/devops-mcp/commit/48ed08c595ab5f7360650a225f4c683ebd294d63) - fix: CRITICAL - resolve GitHub issue #53 - Microsoft.VSTS field resolution bug  
 **Date Resolved**: 2025-07-27  
 
 **Problem**: Work item creation was failing due to improper handling of Microsoft.VSTS field names in Azure DevOps API calls.
@@ -39,7 +39,7 @@ Issue tracking and resolution documentation for the DevOps MCP project.
 
 **Status**: ✅ **RESOLVED**  
 **Pull Request**: [#52](https://github.com/wangkanai/devops-mcp/pull/52)  
-**Commit**: `d41f5a01234567890abcdef1234567890abcdef` - fix: resolve GitHub issue #51 - Microsoft.VSTS field resolution bug in createWorkItem  
+**Commit**: [`d41f5a0aa5b05695f63284314eca19ea5c550ec5`](https://github.com/wangkanai/devops-mcp/commit/d41f5a0aa5b05695f63284314eca19ea5c550ec5) - fix: resolve GitHub issue #51 - Microsoft.VSTS field resolution bug in createWorkItem  
 **Date Resolved**: 2025-07-27  
 
 **Problem**: Similar to issue #53, work item creation was experiencing field resolution problems specifically in the createWorkItem function.
@@ -58,7 +58,7 @@ Issue tracking and resolution documentation for the DevOps MCP project.
 ### **GitHub Issue #48** - Enhanced Field Name Resolution for Microsoft.VSTS Fields ✅ **RESOLVED**
 
 **Status**: ✅ **RESOLVED**  
-**Commit**: `158e2b1` - fix: resolve GitHub issue #48 - enhanced field name resolution for Microsoft.VSTS fields  
+**Commit**: [`158e2b17bbf4f1fdc93295fd1c704e6f4fcc43f6`](https://github.com/wangkanai/devops-mcp/commit/158e2b17bbf4f1fdc93295fd1c704e6f4fcc43f6) - fix: resolve GitHub issue #48 - enhanced field name resolution for Microsoft.VSTS fields  
 **Date Resolved**: 2025-07-27  
 
 **Problem**: Need for enhanced field name resolution capabilities for Microsoft.VSTS fields beyond basic mapping.
@@ -77,7 +77,7 @@ Issue tracking and resolution documentation for the DevOps MCP project.
 ### **GitHub Issue #47** - Comment API Preview Version Handling ✅ **RESOLVED**
 
 **Status**: ✅ **RESOLVED**  
-**Commit**: `e3b3e56a9c4d5f67890123456789abcdef1234567` - fix: resolve GitHub issue #47 - enhance comment API preview version handling  
+**Commit**: [`e3b3e5634d8590ebd9a6d32419ae393d9767681a`](https://github.com/wangkanai/devops-mcp/commit/e3b3e5634d8590ebd9a6d32419ae393d9767681a) - fix: resolve GitHub issue #47 - enhance comment API preview version handling  
 **Date Resolved**: 2025-07-27  
 
 **Problem**: Azure DevOps comment API was failing due to incorrect API version handling for preview features.
@@ -97,7 +97,7 @@ Issue tracking and resolution documentation for the DevOps MCP project.
 
 **Status**: ✅ **RESOLVED**  
 **Pull Request**: [#46](https://github.com/wangkanai/devops-mcp/pull/46)  
-**Commit**: `dd69e55abc123` - fix: resolve GitHub issue #45 - comment API version requires preview flag  
+**Commit**: [`dd69e5584a18fecd3a08603cedaeba14fac901a3`](https://github.com/wangkanai/devops-mcp/commit/dd69e5584a18fecd3a08603cedaeba14fac901a3) - fix: resolve GitHub issue #45 - comment API version requires preview flag  
 **Date Resolved**: 2025-07-27  
 
 **Problem**: Comment API operations were failing because the API version requires a preview flag.
@@ -117,7 +117,7 @@ Issue tracking and resolution documentation for the DevOps MCP project.
 
 **Status**: ✅ **RESOLVED**  
 **Pull Request**: [#44](https://github.com/wangkanai/devops-mcp/pull/44)  
-**Commit**: `e5e0d68abc123456789def0123456789abcdef01` - fix: resolve GitHub issue #43 - API compatibility and validation fixes  
+**Commit**: [`e5e0d68e2a5bffd72f3f833916903e33efee8721`](https://github.com/wangkanai/devops-mcp/commit/e5e0d68e2a5bffd72f3f833916903e33efee8721) - fix: resolve GitHub issue #43 - API compatibility and validation fixes  
 **Date Resolved**: 2025-07-27  
 
 **Problem**: Various API compatibility issues and validation problems across different Azure DevOps operations.
