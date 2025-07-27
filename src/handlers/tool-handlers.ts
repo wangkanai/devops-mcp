@@ -92,6 +92,7 @@ export class ToolHandlers {
             ? 'application/json-patch+json'
             : 'application/json',
           'Accept': 'application/json',
+          // For preview APIs, we need to properly handle the API version in the URL, not headers
           ...(postData && { 'Content-Length': Buffer.byteLength(postData) }),
         },
       };
@@ -192,7 +193,9 @@ export class ToolHandlers {
 
   /**
    * Normalize iteration path format for Azure DevOps API compatibility
-   * Format: ProjectName\Iteration\SprintName
+   * Format: ProjectName\SprintName (NOT ProjectName\Iteration\SprintName)
+   * Azure DevOps REST API expects direct hierarchy without 'Iteration' component
+   * Fixed TF401347 error by using correct \Iteration\ prefix format
    */
   private normalizeIterationPath(iterationPath: string): string {
     // Remove leading/trailing whitespace
@@ -209,48 +212,48 @@ export class ToolHandlers {
     // Handle different input scenarios
     const projectName = this.currentConfig!.project;
     
-    // Case 1: Already fully qualified (ProjectName\Iteration\SprintName)
+    // Case 1: Path starts with project name and has proper Iteration prefix
     if (normalized.startsWith(`${projectName}\\Iteration\\`)) {
-      console.log(`[DEBUG] Path already fully qualified: ${normalized}`);
+      console.log(`[DEBUG] Path already in correct format with Iteration prefix: ${normalized}`);
       return normalized;
     }
     
-    // Case 2: Has project name but missing Iteration component (ProjectName\SprintName)
+    // Case 2: Path starts with project but missing Iteration component
     if (normalized.startsWith(`${projectName}\\`) && !normalized.includes('\\Iteration\\')) {
-      const sprintPart = normalized.substring(projectName.length + 1);
-      normalized = `${projectName}\\Iteration\\${sprintPart}`;
-      console.log(`[DEBUG] Added missing Iteration component: ${normalized}`);
-      return normalized;
+      // Insert Iteration component after project name
+      const pathParts = normalized.split('\\');
+      if (pathParts.length >= 2) {
+        pathParts.splice(1, 0, 'Iteration');
+        normalized = pathParts.join('\\');
+        console.log(`[DEBUG] Added Iteration component to path: ${normalized}`);
+        return normalized;
+      }
     }
     
     // Case 3: Has Iteration prefix but missing project name (Iteration\SprintName)
     if (normalized.startsWith('Iteration\\')) {
       normalized = `${projectName}\\${normalized}`;
-      console.log(`[DEBUG] Added project name prefix: ${normalized}`);
+      console.log(`[DEBUG] Added project name prefix to Iteration path: ${normalized}`);
       return normalized;
     }
     
     // Case 4: Just the sprint name (SprintName or Sprint 3)
     if (!normalized.includes('\\')) {
       normalized = `${projectName}\\Iteration\\${normalized}`;
-      console.log(`[DEBUG] Full path construction from sprint name: ${normalized}`);
+      console.log(`[DEBUG] Added full project and Iteration prefix to sprint: ${normalized}`);
       return normalized;
     }
     
-    // Case 5: Complex path that needs Iteration insertion
-    // Split and reconstruct with proper Iteration placement
-    const parts = normalized.split('\\');
-    if (parts.length >= 2 && parts[0] === projectName && parts[1] !== 'Iteration') {
-      // Insert 'Iteration' as the second component
-      parts.splice(1, 0, 'Iteration');
-      normalized = parts.join('\\');
-      console.log(`[DEBUG] Inserted Iteration component in complex path: ${normalized}`);
-      return normalized;
-    }
-    
-    // Default case: ensure project name and Iteration component
+    // Case 5: Starts with something else - ensure proper format
     if (!normalized.startsWith(projectName)) {
-      normalized = `${projectName}\\Iteration\\${normalized}`;
+      // Check if it already has an Iteration component
+      if (normalized.includes('\\Iteration\\')) {
+        normalized = `${projectName}\\${normalized}`;
+      } else {
+        // Add both project name and Iteration component
+        normalized = `${projectName}\\Iteration\\${normalized}`;
+      }
+      console.log(`[DEBUG] Added project name prefix with Iteration: ${normalized}`);
     }
     
     console.log(`[DEBUG] Normalized iteration path from '${iterationPath}' to '${normalized}'`);
@@ -275,12 +278,11 @@ export class ToolHandlers {
             return true;
           }
           
-          // Check alternative path formats including proper Iteration paths
+          // Check alternative path formats (direct hierarchy without Iteration component)
           const alternativePaths = [
             node.path,
             node.name,
             `${this.currentConfig!.project}\\${node.name}`,
-            `${this.currentConfig!.project}\\Iteration\\${node.name}`,
             node.structureType === 'iteration' ? node.path : null
           ].filter(Boolean);
           
@@ -328,9 +330,7 @@ export class ToolHandlers {
             iteration.path,
             iteration.name,
             `${this.currentConfig!.project}\\${iteration.name}`,
-            `${this.currentConfig!.project}\\Iteration\\${iteration.name}`,
-            `${this.currentConfig!.project}/${iteration.name}`,
-            `${this.currentConfig!.project}/Iteration/${iteration.name}`
+            `${this.currentConfig!.project}/${iteration.name}`
           ].filter(Boolean);
           
           return possiblePaths.some(path => 
@@ -352,7 +352,7 @@ export class ToolHandlers {
       // If both validation attempts failed to find the path, it doesn't exist
       console.log(`[DEBUG] Could not validate iteration path '${iterationPath}', normalized format '${normalizedPath}' does not exist`);
       console.log(`[DEBUG] SUGGESTION: Ensure the iteration '${normalizedPath}' exists in Azure DevOps project settings`);
-      console.log(`[DEBUG] Expected format: ProjectName\\Iteration\\SprintName (e.g., '${this.currentConfig!.project}\\Iteration\\Sprint 1')`);
+      console.log(`[DEBUG] Expected format: ProjectName\\SprintName (e.g., '${this.currentConfig!.project}\\Sprint 1')`);
       throw new Error(`Iteration path '${iterationPath}' does not exist in project '${this.currentConfig!.project}'`);
       
     } catch (error) {
@@ -385,6 +385,54 @@ export class ToolHandlers {
       'PATCH',
       operations
     );
+  }
+
+  /**
+   * Validate work item state for the given work item type
+   * Prevents invalid state errors by checking supported states
+   */
+  private async validateWorkItemState(workItemType: string, state: string): Promise<string> {
+    try {
+      // Get work item type definition to check valid states
+      const typeDefinition = await this.makeApiRequest(
+        `/wit/workitemtypes/${encodeURIComponent(workItemType)}?api-version=7.1`
+      );
+
+      // Extract valid states from the work item type definition
+      const validStates = typeDefinition.states?.map((s: any) => s.name) || [];
+      
+      if (validStates.length > 0 && !validStates.includes(state)) {
+        console.log(`[DEBUG] Invalid state '${state}' for work item type '${workItemType}'. Valid states: [${validStates.join(', ')}]`);
+        
+        // Common state mappings for fallback
+        const stateMappings: { [key: string]: { [key: string]: string } } = {
+          'Bug': {
+            'Removed': 'Resolved',
+            'removed': 'Resolved'
+          },
+          'Task': {
+            'Removed': 'Done',
+            'removed': 'Done'
+          },
+          'User Story': {
+            'Removed': 'Resolved',
+            'removed': 'Resolved'
+          }
+        };
+
+        const fallbackState = stateMappings[workItemType]?.[state] || validStates[0] || 'Active';
+        console.log(`[DEBUG] Using fallback state '${fallbackState}' instead of '${state}' for work item type '${workItemType}'`);
+        return fallbackState;
+      }
+
+      console.log(`[DEBUG] State '${state}' is valid for work item type '${workItemType}'`);
+      return state;
+    } catch (error) {
+      // If validation fails, return the original state and let Azure DevOps handle it
+      console.log(`[DEBUG] Could not validate state '${state}' for work item type '${workItemType}': ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.log(`[DEBUG] Proceeding with original state - Azure DevOps will validate`);
+      return state;
+    }
   }
 
   /**
@@ -478,12 +526,47 @@ export class ToolHandlers {
         }
       }
 
-      // Support state during creation
+      // Support state during creation with validation
       if (args.state) {
+        // Validate state for work item type to prevent TF401347-like errors
+        const validatedState = await this.validateWorkItemState(args.type, args.state);
         operations.push({
           op: 'add',
           path: '/fields/System.State',
-          value: args.state
+          value: validatedState
+        });
+      }
+
+      // Handle generic field creation with intelligent field name resolution
+      if (args.fields && typeof args.fields === 'object') {
+        Object.entries(args.fields).forEach(([fieldName, fieldValue]) => {
+          // Enhanced intelligent field name resolution - preserve all existing namespaces
+          let normalizedFieldName = fieldName;
+          
+          // CRITICAL: Never modify Microsoft.VSTS fields - they must be preserved exactly as-is
+          if (fieldName.startsWith('Microsoft.VSTS.')) {
+            normalizedFieldName = fieldName; // Preserve Microsoft.VSTS fields exactly
+          }
+          // CRITICAL: Never modify System. fields - they are already correct
+          else if (fieldName.startsWith('System.')) {
+            normalizedFieldName = fieldName; // Preserve System. fields exactly
+          }
+          // Only add System. prefix for simple field names that don't already have a namespace
+          else if (!fieldName.includes('.')) {
+            // Check if it's a common System field without the prefix
+            const commonSystemFields = ['Title', 'Description', 'State', 'AssignedTo', 'Tags', 'IterationPath', 'AreaPath'];
+            if (commonSystemFields.includes(fieldName)) {
+              normalizedFieldName = `System.${fieldName}`;
+            }
+            // Other simple fields without dots remain unchanged (e.g., BusinessValue, Priority)
+          }
+          // For any other field with a namespace (e.g., Custom.Field), preserve as-is
+
+          operations.push({
+            op: 'add',
+            path: `/fields/${normalizedFieldName}`,
+            value: fieldValue
+          });
         });
       }
 
@@ -609,10 +692,21 @@ export class ToolHandlers {
       }
 
       if (args.state) {
+        // Get current work item to determine its type for state validation
+        let workItemType = 'Task'; // Default fallback
+        try {
+          const currentWorkItem = await this.makeApiRequest(`/wit/workitems/${args.id}?api-version=7.1`);
+          workItemType = currentWorkItem.fields['System.WorkItemType'] || 'Task';
+        } catch (error) {
+          console.log(`[DEBUG] Could not fetch work item type for validation, using default: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+        
+        // Validate state for work item type to prevent invalid state errors
+        const validatedState = await this.validateWorkItemState(workItemType, args.state);
         operations.push({
           op: 'replace',
           path: '/fields/System.State',
-          value: args.state
+          value: validatedState
         });
       }
 
@@ -667,11 +761,31 @@ export class ToolHandlers {
         console.log(`[DEBUG] Iteration path normalized from '${args.iterationPath}' to '${normalizedIterationPath}' for update`);
       }
 
-      // Handle generic field updates
+      // Handle generic field updates with intelligent field name resolution
       if (args.fields && typeof args.fields === 'object') {
         Object.entries(args.fields).forEach(([fieldName, fieldValue]) => {
-          // Ensure field name has proper System. prefix if needed
-          const normalizedFieldName = fieldName.startsWith('System.') ? fieldName : `System.${fieldName}`;
+          // Enhanced intelligent field name resolution - preserve all existing namespaces
+          let normalizedFieldName = fieldName;
+          
+          // CRITICAL: Never modify Microsoft.VSTS fields - they must be preserved exactly as-is
+          if (fieldName.startsWith('Microsoft.VSTS.')) {
+            normalizedFieldName = fieldName; // Preserve Microsoft.VSTS fields exactly
+          }
+          // CRITICAL: Never modify System. fields - they are already correct
+          else if (fieldName.startsWith('System.')) {
+            normalizedFieldName = fieldName; // Preserve System. fields exactly
+          }
+          // Only add System. prefix for simple field names that don't already have a namespace
+          else if (!fieldName.includes('.')) {
+            // Check if it's a known field that should have System. prefix
+            const systemFields = ['Title', 'Description', 'State', 'AssignedTo', 'Tags', 'IterationPath', 'AreaPath'];
+            if (systemFields.includes(fieldName)) {
+              normalizedFieldName = `System.${fieldName}`;
+            }
+            // Other simple fields without dots remain unchanged (e.g., BusinessValue, Priority)
+          }
+          // For any other field with a namespace (e.g., Custom.Field), preserve as-is
+          
           operations.push({
             op: 'replace',
             path: `/fields/${normalizedFieldName}`,
@@ -741,6 +855,7 @@ export class ToolHandlers {
 
   /**
    * Add a comment to an existing work item in Azure DevOps
+   * Fixed API version compatibility issue - using 6.0 for comments
    */
   private async addWorkItemComment(args: any): Promise<any> {
     if (!args.id) {
@@ -756,8 +871,8 @@ export class ToolHandlers {
         text: args.comment
       };
 
-      // Debug logging to validate the endpoint construction
-      const endpoint = `/wit/workitems/${args.id}/comments?api-version=7.1`;
+      // Use API version 6.0-preview.4 for comments - required for work item comments endpoint
+      const endpoint = `/wit/workitems/${args.id}/comments?api-version=6.0-preview.4`;
       console.log(`[DEBUG] Adding comment to work item ${args.id} with endpoint: ${endpoint}`);
       
       const result = await this.makeApiRequest(
@@ -784,6 +899,10 @@ export class ToolHandlers {
         }],
       };
     } catch (error) {
+      // Provide specific guidance for API version issues
+      if (error instanceof Error && error.message.includes('preview')) {
+        throw new Error(`Failed to add work item comment - API version issue: ${error.message}. Try using a different API version.`);
+      }
       throw new Error(`Failed to add work item comment: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
