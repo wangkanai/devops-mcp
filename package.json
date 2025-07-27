@@ -1,6 +1,6 @@
 {
   "name": "@wangkanai/devops-mcp",
-  "version": "1.5.8",
+  "version": "1.5.9",
   "description": "Dynamic Azure DevOps MCP Server for directory-based environment switching",
   "main": "dist/index.js",
   "bin": {

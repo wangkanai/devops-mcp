@@ -91,9 +91,8 @@ export class ToolHandlers {
           'Content-Type': method === 'PATCH' && endpoint.includes('/wit/workitems/')
             ? 'application/json-patch+json'
             : 'application/json',
-          'Accept': endpoint.includes('-preview') 
-            ? 'application/json;api-version=6.0-preview'
-            : 'application/json',
+          'Accept': 'application/json',
+          // For preview APIs, we need to properly handle the API version in the URL, not headers
           ...(postData && { 'Content-Length': Buffer.byteLength(postData) }),
         },
       };
@@ -839,8 +838,8 @@ export class ToolHandlers {
         text: args.comment
       };
 
-      // Use API version 6.0-preview for comments - required for work item comments endpoint
-      const endpoint = `/wit/workitems/${args.id}/comments?api-version=6.0-preview`;
+      // Use API version 6.0-preview.4 for comments - required for work item comments endpoint
+      const endpoint = `/wit/workitems/${args.id}/comments?api-version=6.0-preview.4`;
       console.log(`[DEBUG] Adding comment to work item ${args.id} with endpoint: ${endpoint}`);
       
       const result = await this.makeApiRequest(
