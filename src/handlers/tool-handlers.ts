@@ -537,6 +537,39 @@ export class ToolHandlers {
         });
       }
 
+      // Handle generic field creation with intelligent field name resolution
+      if (args.fields && typeof args.fields === 'object') {
+        Object.entries(args.fields).forEach(([fieldName, fieldValue]) => {
+          // Enhanced intelligent field name resolution - preserve all existing namespaces
+          let normalizedFieldName = fieldName;
+          
+          // CRITICAL: Never modify Microsoft.VSTS fields - they must be preserved exactly as-is
+          if (fieldName.startsWith('Microsoft.VSTS.')) {
+            normalizedFieldName = fieldName; // Preserve Microsoft.VSTS fields exactly
+          }
+          // CRITICAL: Never modify System. fields - they are already correct
+          else if (fieldName.startsWith('System.')) {
+            normalizedFieldName = fieldName; // Preserve System. fields exactly
+          }
+          // Only add System. prefix for simple field names that don't already have a namespace
+          else if (!fieldName.includes('.')) {
+            // Check if it's a common System field without the prefix
+            const commonSystemFields = ['Title', 'Description', 'State', 'AssignedTo', 'Tags', 'IterationPath', 'AreaPath'];
+            if (commonSystemFields.includes(fieldName)) {
+              normalizedFieldName = `System.${fieldName}`;
+            }
+            // Other simple fields without dots remain unchanged (e.g., BusinessValue, Priority)
+          }
+          // For any other field with a namespace (e.g., Custom.Field), preserve as-is
+
+          operations.push({
+            op: 'add',
+            path: `/fields/${normalizedFieldName}`,
+            value: fieldValue
+          });
+        });
+      }
+
       // Debug logging to validate the endpoint construction
       const endpoint = `/wit/workitems/$${args.type}?api-version=7.1`;
       console.log(`[DEBUG] Creating work item with endpoint: ${endpoint}`);
