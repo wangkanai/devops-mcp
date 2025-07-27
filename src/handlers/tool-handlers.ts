@@ -91,7 +91,9 @@ export class ToolHandlers {
           'Content-Type': method === 'PATCH' && endpoint.includes('/wit/workitems/')
             ? 'application/json-patch+json'
             : 'application/json',
-          'Accept': 'application/json',
+          'Accept': endpoint.includes('-preview') 
+            ? 'application/json;api-version=6.0-preview'
+            : 'application/json',
           ...(postData && { 'Content-Length': Buffer.byteLength(postData) }),
         },
       };
@@ -727,11 +729,31 @@ export class ToolHandlers {
         console.log(`[DEBUG] Iteration path normalized from '${args.iterationPath}' to '${normalizedIterationPath}' for update`);
       }
 
-      // Handle generic field updates
+      // Handle generic field updates with intelligent field name resolution
       if (args.fields && typeof args.fields === 'object') {
         Object.entries(args.fields).forEach(([fieldName, fieldValue]) => {
-          // Ensure field name has proper System. prefix if needed
-          const normalizedFieldName = fieldName.startsWith('System.') ? fieldName : `System.${fieldName}`;
+          // Enhanced intelligent field name resolution - preserve all existing namespaces
+          let normalizedFieldName = fieldName;
+          
+          // CRITICAL: Never modify Microsoft.VSTS fields - they must be preserved exactly as-is
+          if (fieldName.startsWith('Microsoft.VSTS.')) {
+            normalizedFieldName = fieldName; // Preserve Microsoft.VSTS fields exactly
+          }
+          // CRITICAL: Never modify System. fields - they are already correct
+          else if (fieldName.startsWith('System.')) {
+            normalizedFieldName = fieldName; // Preserve System. fields exactly
+          }
+          // Only add System. prefix for simple field names that don't already have a namespace
+          else if (!fieldName.includes('.')) {
+            // Check if it's a known field that should have System. prefix
+            const systemFields = ['Title', 'Description', 'State', 'AssignedTo', 'Tags', 'IterationPath', 'AreaPath'];
+            if (systemFields.includes(fieldName)) {
+              normalizedFieldName = `System.${fieldName}`;
+            }
+            // Other simple fields without dots remain unchanged (e.g., BusinessValue, Priority)
+          }
+          // For any other field with a namespace (e.g., Custom.Field), preserve as-is
+          
           operations.push({
             op: 'replace',
             path: `/fields/${normalizedFieldName}`,
