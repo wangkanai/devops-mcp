@@ -25,9 +25,6 @@ module.exports = {
       statements: 80
     }
   },
-  // Setup files if needed
-  setupFilesAfterEnv: [],
-  
   // Module name mapping for absolute imports if used
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'
