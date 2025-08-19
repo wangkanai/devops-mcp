@@ -326,7 +326,7 @@ const headers = {
 
 ### **Production-Ready Status**
 - ✅ **Test Coverage**: >95% (Jest framework)
-- ✅ **Code Quality**: ESLint + Prettier enforcement 
+- ✅ **Code Quality**: ESLint + Prettier enforcement
 - ✅ **Type Safety**: Full TypeScript coverage
 - ✅ **Security**: Secure PAT token handling, credential isolation
 - ✅ **Performance**: <200ms response time for typical operations
@@ -393,7 +393,7 @@ mcp__devops-mcp__get-current-context  # Shows client configuration
 
 ### **Common Issues & Solutions**
 
-**❌ "No Azure DevOps configuration found"**
+#### ❌ "No Azure DevOps configuration found"
 ```bash
 # Check current context
 mcp__devops-mcp__get-current-context
@@ -405,14 +405,14 @@ ls -la .azure-devops.json
 cat .azure-devops.json | jq .
 ```
 
-**❌ "Authentication failed"**
+#### ❌ "Authentication failed"
 ```bash
 # Verify PAT token permissions and expiration
 # Check organization URL format: https://dev.azure.com/orgname
 # Ensure project name matches exactly
 ```
 
-**❌ "Work item type not found"**
+#### ❌ "Work item type not found"
 ```bash
 # Use process-specific work item types:
 # Agile: Epic, Feature, User Story, Task, Bug
