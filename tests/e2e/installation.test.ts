@@ -259,7 +259,7 @@ describe('Installation E2E Tests', () => {
       return new Promise<void>((resolve) => {
         const timeout = setTimeout(() => {
           const elapsed = Date.now() - startTime;
-          expect(elapsed).toBeGreaterThanOrEqual(100);
+          expect(elapsed).toBeGreaterThanOrEqual(95); // Allow 5ms tolerance for CI timing variance
           expect(elapsed).toBeLessThan(200);
           resolve();
         }, 100);

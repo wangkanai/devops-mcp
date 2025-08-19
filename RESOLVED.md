@@ -300,4 +300,4 @@ The DevOps MCP project has successfully resolved all identified issues and achie
 **Created**: 2025-07-27  
 **Project Status**: 🗄️ **ARCHIVED (COMPLETED)**  
 **Issue Tracking**: **COMPLETE** - All issues resolved  
-**GitHub Repository**: https://github.com/wangkanai/devops-mcp
+**GitHub Repository**: <https://github.com/wangkanai/devops-mcp>
