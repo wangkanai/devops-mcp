@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '18.14'
           cache: 'npm'
 
       - name: Install dependencies
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: ['16', '18', '20']
+        node-version: ['18.14', '20', '22']
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -80,7 +80,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '18.14'
           cache: 'npm'
 
       - name: Install dependencies
@@ -120,7 +120,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '18.14'
           cache: 'npm'
 
       - name: Install dependencies
@@ -148,7 +148,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '18.14'
           cache: 'npm'
 
       - name: Install dependencies
@@ -179,7 +179,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '18.14'
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
