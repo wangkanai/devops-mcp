@@ -28,19 +28,8 @@ describe('MCP Server Integration', () => {
   let server: ChildProcess;
   const serverPath = path.join(__dirname, '..', '..', 'dist', 'index.js');
   
-  beforeAll(async () => {
-    // Ensure the server is built
-    const { execSync } = require('child_process');
-    execSync('npm run build', { stdio: 'inherit' });
-    
-    // Ensure the built file has execute permissions
-    const fs = require('fs');
-    const path = require('path');
-    const distPath = path.join(__dirname, '..', '..', 'dist', 'index.js');
-    if (fs.existsSync(distPath)) {
-      execSync(`chmod +x "${distPath}"`, { stdio: 'inherit' });
-    }
-  });
+  // Build is handled by jest.globalSetup.js to avoid race conditions
+  // when parallel workers each try to build (prebuild does rm -rf dist)
 
   beforeEach((done) => {
     server = spawn('node', [serverPath], {
@@ -113,7 +102,7 @@ describe('MCP Server Integration', () => {
       expect(response.result).toBeDefined();
       expect(response.result.protocolVersion).toBeDefined();
       expect(response.result.capabilities).toBeDefined();
-    });
+    }, 20000);
 
     (process.env.CI || process.env.GITHUB_ACTIONS ? it.skip : it)('should respond to tools/list request', async () => {
       // First initialize

@@ -43,7 +43,7 @@ export class LocalConfigLoader {
 
     try {
       if (!fs.existsSync(configPath)) {
-        console.log(`No local Azure DevOps config found in ${workingDir}`);
+        console.error(`No local Azure DevOps config found in ${workingDir}`);
         return null;
       }
 
@@ -105,7 +105,7 @@ export class LocalConfigLoader {
       currentDir = parentDir;
     }
 
-    console.log('No Azure DevOps configuration found in current directory tree');
+    console.error('No Azure DevOps configuration found in current directory tree');
     return null;
   }
 
@@ -187,7 +187,7 @@ export class LocalConfigLoader {
 
     try {
       fs.writeFileSync(configPath, JSON.stringify(exampleConfig, null, 2));
-      console.log(`Created example configuration at ${configPath}`);
+      console.error(`Created example configuration at ${configPath}`);
     } catch (error) {
       console.error(`Failed to create example configuration:`, error);
     }

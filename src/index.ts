@@ -50,7 +50,7 @@ class AzureDevOpsMCPProxy {
       
       if (this.currentConfig) {
         this.toolHandlers.setCurrentConfig(this.currentConfig);
-        console.log('Azure DevOps MCP Proxy initialized with local configuration:', {
+        console.error('Azure DevOps MCP Proxy initialized with local configuration:', {
           organizationUrl: this.currentConfig.organizationUrl,
           project: this.currentConfig.project,
           directory: process.cwd()
@@ -59,7 +59,7 @@ class AzureDevOpsMCPProxy {
       }
 
       // Fallback to environment-based configuration
-      console.log('No local configuration found, trying environment-based config...');
+      console.error('No local configuration found, trying environment-based config...');
       try {
         const envConfig = ConfigLoader.loadConfig();
         this.directoryDetector = new DirectoryDetector(
@@ -70,18 +70,18 @@ class AzureDevOpsMCPProxy {
         this.currentConfig = this.directoryDetector.detectConfiguration();
       } catch (error) {
         // Environment config file doesn't exist - this is normal in the new system
-        console.log('No environment configuration found - operating in local-only mode');
+        console.error('No environment configuration found - operating in local-only mode');
         this.currentConfig = null;
       }
       if (this.currentConfig) {
         this.toolHandlers.setCurrentConfig(this.currentConfig);
-        console.log('Azure DevOps MCP Proxy initialized with environment configuration:', {
+        console.error('Azure DevOps MCP Proxy initialized with environment configuration:', {
           organizationUrl: this.currentConfig.organizationUrl,
           project: this.currentConfig.project
         });
       } else {
         console.warn('No Azure DevOps configuration detected for current directory');
-        console.log('Consider creating a .azure-devops.json file in your repository');
+        console.error('Consider creating a .azure-devops.json file in your repository');
       }
     } catch (error) {
       console.error('Failed to initialize configuration:', error);
@@ -401,7 +401,7 @@ class AzureDevOpsMCPProxy {
       this.currentConfig = detectedConfig;
       this.toolHandlers.setCurrentConfig(detectedConfig);
       
-      console.log(`Switched to Azure DevOps context: ${detectedConfig.organizationUrl}/${detectedConfig.project}`);
+      console.error(`Switched to Azure DevOps context: ${detectedConfig.organizationUrl}/${detectedConfig.project}`);
     }
   }
 

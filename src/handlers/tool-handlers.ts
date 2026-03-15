@@ -217,38 +217,38 @@ export class ToolHandlers {
 
     // Case 1: Already has project prefix with Iteration component (case-insensitive)
     if (normalizedLower.startsWith(projectLower + '\\iteration\\')) {
-      console.log(`[DEBUG] Path already in correct format with Iteration prefix: ${normalized}`);
+      console.error(`[DEBUG] Path already in correct format with Iteration prefix: ${normalized}`);
       return normalized;
     }
 
     // Case 2: Has project prefix without Iteration component (case-insensitive)
     // e.g., "GSB\Sprint 012" or "gsb\Sprint 012" — return as-is, don't force \Iteration\
     if (normalizedLower.startsWith(projectLower + '\\')) {
-      console.log(`[DEBUG] Path already has project prefix: ${normalized}`);
+      console.error(`[DEBUG] Path already has project prefix: ${normalized}`);
       return normalized;
     }
 
     // Case 3: Has Iteration prefix but missing project name (Iteration\SprintName)
     if (normalizedLower.startsWith('iteration\\')) {
       normalized = `${projectName}\\${normalized}`;
-      console.log(`[DEBUG] Added project name prefix to Iteration path: ${normalized}`);
+      console.error(`[DEBUG] Added project name prefix to Iteration path: ${normalized}`);
       return normalized;
     }
 
     // Case 4: Just the sprint name (SprintName or Sprint 3) — prefix with project name only
     if (!normalized.includes('\\')) {
       normalized = `${projectName}\\${normalized}`;
-      console.log(`[DEBUG] Added project prefix to sprint: ${normalized}`);
+      console.error(`[DEBUG] Added project prefix to sprint: ${normalized}`);
       return normalized;
     }
 
     // Case 5: Some other multi-segment path — prefix with project name
     if (!normalizedLower.startsWith(projectLower)) {
       normalized = `${projectName}\\${normalized}`;
-      console.log(`[DEBUG] Added project name prefix: ${normalized}`);
+      console.error(`[DEBUG] Added project name prefix: ${normalized}`);
     }
 
-    console.log(`[DEBUG] Normalized iteration path from '${iterationPath}' to '${normalized}'`);
+    console.error(`[DEBUG] Normalized iteration path from '${iterationPath}' to '${normalized}'`);
     return normalized;
   }
 
@@ -268,7 +268,7 @@ export class ToolHandlers {
 
           // Check current node path (case-insensitive)
           if (node.path?.toLowerCase() === targetLower) {
-            console.log(`[DEBUG] Found exact path match: ${node.path}`);
+            console.error(`[DEBUG] Found exact path match: ${node.path}`);
             return true;
           }
 
@@ -283,7 +283,7 @@ export class ToolHandlers {
           for (const altPath of alternativePaths) {
             if (altPath?.toLowerCase() === targetLower ||
                 altPath?.replace(/\\/g, '/').toLowerCase() === targetPath.replace(/\\/g, '/').toLowerCase()) {
-              console.log(`[DEBUG] Found alternative path match: ${altPath} -> ${targetPath}`);
+              console.error(`[DEBUG] Found alternative path match: ${altPath} -> ${targetPath}`);
               return true;
             }
           }
@@ -301,18 +301,18 @@ export class ToolHandlers {
         };
         
         if (classificationNodes && findInNodes(classificationNodes, normalizedPath)) {
-          console.log(`[DEBUG] Iteration path '${normalizedPath}' validated successfully`);
+          console.error(`[DEBUG] Iteration path '${normalizedPath}' validated successfully`);
           return normalizedPath;
         }
         
         // Also try with original path format
         if (normalizedPath !== iterationPath && findInNodes(classificationNodes, iterationPath)) {
-          console.log(`[DEBUG] Original iteration path '${iterationPath}' validated successfully`);
+          console.error(`[DEBUG] Original iteration path '${iterationPath}' validated successfully`);
           return iterationPath;
         }
         
       } catch (classificationError) {
-        console.log(`[DEBUG] Classification nodes query failed: ${classificationError instanceof Error ? classificationError.message : 'Unknown error'}`);
+        console.error(`[DEBUG] Classification nodes query failed: ${classificationError instanceof Error ? classificationError.message : 'Unknown error'}`);
       }
       
       // Approach 2: Get team iterations (fallback)
@@ -340,17 +340,17 @@ export class ToolHandlers {
         });
         
         if (pathExists) {
-          console.log(`[DEBUG] Iteration path validated via team iterations`);
+          console.error(`[DEBUG] Iteration path validated via team iterations`);
           return normalizedPath;
         }
       } catch (teamError) {
-        console.log(`[DEBUG] Team iterations query failed: ${teamError instanceof Error ? teamError.message : 'Unknown error'}`);
+        console.error(`[DEBUG] Team iterations query failed: ${teamError instanceof Error ? teamError.message : 'Unknown error'}`);
       }
       
       // If both validation attempts failed to find the path, it doesn't exist
-      console.log(`[DEBUG] Could not validate iteration path '${iterationPath}', normalized format '${normalizedPath}' does not exist`);
-      console.log(`[DEBUG] SUGGESTION: Ensure the iteration '${normalizedPath}' exists in Azure DevOps project settings`);
-      console.log(`[DEBUG] Expected format: ProjectName\\SprintName (e.g., '${this.currentConfig!.project}\\Sprint 1')`);
+      console.error(`[DEBUG] Could not validate iteration path '${iterationPath}', normalized format '${normalizedPath}' does not exist`);
+      console.error(`[DEBUG] SUGGESTION: Ensure the iteration '${normalizedPath}' exists in Azure DevOps project settings`);
+      console.error(`[DEBUG] Expected format: ProjectName\\SprintName (e.g., '${this.currentConfig!.project}\\Sprint 1')`);
       throw new Error(`Iteration path '${iterationPath}' does not exist in project '${this.currentConfig!.project}'`);
       
     } catch (error) {
@@ -362,8 +362,8 @@ export class ToolHandlers {
       
       // For other errors (network, auth, etc.), return normalized path with warning
       const normalizedPath = this.normalizeIterationPath(iterationPath);
-      console.log(`[DEBUG] Validation error for path '${iterationPath}': ${error instanceof Error ? error.message : 'Unknown error'}`);
-      console.log(`[DEBUG] Using normalized path due to validation service unavailability`);
+      console.error(`[DEBUG] Validation error for path '${iterationPath}': ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error(`[DEBUG] Using normalized path due to validation service unavailability`);
       return normalizedPath;
     }
   }
@@ -400,7 +400,7 @@ export class ToolHandlers {
       const validStates = typeDefinition.states?.map((s: any) => s.name) || [];
       
       if (validStates.length > 0 && !validStates.includes(state)) {
-        console.log(`[DEBUG] Invalid state '${state}' for work item type '${workItemType}'. Valid states: [${validStates.join(', ')}]`);
+        console.error(`[DEBUG] Invalid state '${state}' for work item type '${workItemType}'. Valid states: [${validStates.join(', ')}]`);
         
         // Common state mappings for fallback
         const stateMappings: { [key: string]: { [key: string]: string } } = {
@@ -419,16 +419,16 @@ export class ToolHandlers {
         };
 
         const fallbackState = stateMappings[workItemType]?.[state] || validStates[0] || 'Active';
-        console.log(`[DEBUG] Using fallback state '${fallbackState}' instead of '${state}' for work item type '${workItemType}'`);
+        console.error(`[DEBUG] Using fallback state '${fallbackState}' instead of '${state}' for work item type '${workItemType}'`);
         return fallbackState;
       }
 
-      console.log(`[DEBUG] State '${state}' is valid for work item type '${workItemType}'`);
+      console.error(`[DEBUG] State '${state}' is valid for work item type '${workItemType}'`);
       return state;
     } catch (error) {
       // If validation fails, return the original state and let Azure DevOps handle it
-      console.log(`[DEBUG] Could not validate state '${state}' for work item type '${workItemType}': ${error instanceof Error ? error.message : 'Unknown error'}`);
-      console.log(`[DEBUG] Proceeding with original state - Azure DevOps will validate`);
+      console.error(`[DEBUG] Could not validate state '${state}' for work item type '${workItemType}': ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error(`[DEBUG] Proceeding with original state - Azure DevOps will validate`);
       return state;
     }
   }
@@ -483,7 +483,7 @@ export class ToolHandlers {
         }
         
         const parentUrl = `${this.currentConfig!.organizationUrl}/${this.currentConfig!.project}/_apis/wit/workItems/${parentId}`;
-        console.log(`[DEBUG] Setting parent relationship to work item ${parentId} using URL: ${parentUrl}`);
+        console.error(`[DEBUG] Setting parent relationship to work item ${parentId} using URL: ${parentUrl}`);
         
         operations.push({
           op: 'add',
@@ -515,12 +515,12 @@ export class ToolHandlers {
             value: finalIterationPath
           });
           iterationPathHandled = true;
-          console.log(`[DEBUG] Iteration path normalized to '${finalIterationPath}' and will be set during creation`);
+          console.error(`[DEBUG] Iteration path normalized to '${finalIterationPath}' and will be set during creation`);
         } catch (validationError) {
           iterationPathError = validationError;
           finalIterationPath = this.normalizeIterationPath(args.iterationPath);
-          console.log(`[DEBUG] Iteration path validation failed: ${validationError instanceof Error ? validationError.message : 'Unknown error'}`);
-          console.log(`[DEBUG] Will attempt to set normalized path '${finalIterationPath}' after work item creation`);
+          console.error(`[DEBUG] Iteration path validation failed: ${validationError instanceof Error ? validationError.message : 'Unknown error'}`);
+          console.error(`[DEBUG] Will attempt to set normalized path '${finalIterationPath}' after work item creation`);
         }
       }
 
@@ -559,7 +559,7 @@ export class ToolHandlers {
           }
           // System.* and Microsoft.* fields are preserved exactly as-is
 
-          console.log(`[DEBUG] Field resolution: "${fieldName}" → "${normalizedFieldName}"`);
+          console.error(`[DEBUG] Field resolution: "${fieldName}" → "${normalizedFieldName}"`);
           
           operations.push({
             op: 'add',
@@ -571,8 +571,8 @@ export class ToolHandlers {
 
       // Debug logging to validate the endpoint construction
       const endpoint = `/wit/workitems/$${args.type}?api-version=7.1`;
-      console.log(`[DEBUG] Creating work item with endpoint: ${endpoint}`);
-      console.log(`[DEBUG] Full URL will be: ${this.currentConfig!.organizationUrl}/${this.currentConfig!.project}/_apis${endpoint}`);
+      console.error(`[DEBUG] Creating work item with endpoint: ${endpoint}`);
+      console.error(`[DEBUG] Full URL will be: ${this.currentConfig!.organizationUrl}/${this.currentConfig!.project}/_apis${endpoint}`);
       
       // Create the work item
       const result = await this.makeApiRequest(
@@ -584,14 +584,14 @@ export class ToolHandlers {
       // Handle iteration path post-creation if it wasn't set during creation
       if (args.iterationPath && !iterationPathHandled && finalIterationPath) {
         try {
-          console.log(`[DEBUG] Attempting to set normalized iteration path '${finalIterationPath}' post-creation for work item ${result.id}`);
+          console.error(`[DEBUG] Attempting to set normalized iteration path '${finalIterationPath}' post-creation for work item ${result.id}`);
           await this.updateWorkItemIterationPath(result.id, finalIterationPath);
           
           // Refresh the work item to get updated fields
           const updatedResult = await this.makeApiRequest(`/wit/workitems/${result.id}?api-version=7.1`);
           Object.assign(result, updatedResult);
           
-          console.log(`[DEBUG] Successfully set iteration path post-creation`);
+          console.error(`[DEBUG] Successfully set iteration path post-creation`);
         } catch (postCreationError) {
           console.error(`[WARNING] Failed to set iteration path post-creation: ${postCreationError instanceof Error ? postCreationError.message : 'Unknown error'}`);
           // Don't fail the entire operation, just log the warning
@@ -697,7 +697,7 @@ export class ToolHandlers {
           const currentWorkItem = await this.makeApiRequest(`/wit/workitems/${args.id}?api-version=7.1`);
           workItemType = currentWorkItem.fields['System.WorkItemType'] || 'Task';
         } catch (error) {
-          console.log(`[DEBUG] Could not fetch work item type for validation, using default: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          console.error(`[DEBUG] Could not fetch work item type for validation, using default: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
         
         // Validate state for work item type to prevent invalid state errors
@@ -734,7 +734,7 @@ export class ToolHandlers {
         }
         
         const parentUrl = `${this.currentConfig!.organizationUrl}/${this.currentConfig!.project}/_apis/wit/workItems/${parentId}`;
-        console.log(`[DEBUG] Setting parent relationship to work item ${parentId} using URL: ${parentUrl}`);
+        console.error(`[DEBUG] Setting parent relationship to work item ${parentId} using URL: ${parentUrl}`);
         
         operations.push({
           op: 'add',
@@ -757,7 +757,7 @@ export class ToolHandlers {
           path: '/fields/System.IterationPath',
           value: normalizedIterationPath
         });
-        console.log(`[DEBUG] Iteration path normalized from '${args.iterationPath}' to '${normalizedIterationPath}' for update`);
+        console.error(`[DEBUG] Iteration path normalized from '${args.iterationPath}' to '${normalizedIterationPath}' for update`);
       }
 
       // Handle generic field updates with intelligent field name resolution
@@ -784,7 +784,7 @@ export class ToolHandlers {
           }
           // System.* and Microsoft.* fields are preserved exactly as-is
 
-          console.log(`[DEBUG] Field resolution: "${fieldName}" → "${normalizedFieldName}"`);
+          console.error(`[DEBUG] Field resolution: "${fieldName}" → "${normalizedFieldName}"`);
           
           operations.push({
             op: 'replace',
@@ -800,8 +800,8 @@ export class ToolHandlers {
 
       // Debug logging to validate the endpoint construction
       const endpoint = `/wit/workitems/${args.id}?api-version=7.1`;
-      console.log(`[DEBUG] Updating work item ${args.id} with endpoint: ${endpoint}`);
-      console.log(`[DEBUG] Operations:`, JSON.stringify(operations, null, 2));
+      console.error(`[DEBUG] Updating work item ${args.id} with endpoint: ${endpoint}`);
+      console.error(`[DEBUG] Operations:`, JSON.stringify(operations, null, 2));
       
       const result = await this.makeApiRequest(
         endpoint,
@@ -873,7 +873,7 @@ export class ToolHandlers {
 
       // Use API version 6.0-preview.4 for comments - required for work item comments endpoint
       const endpoint = `/wit/workitems/${args.id}/comments?api-version=6.0-preview.4`;
-      console.log(`[DEBUG] Adding comment to work item ${args.id} with endpoint: ${endpoint}`);
+      console.error(`[DEBUG] Adding comment to work item ${args.id} with endpoint: ${endpoint}`);
       
       const result = await this.makeApiRequest(
         endpoint,
