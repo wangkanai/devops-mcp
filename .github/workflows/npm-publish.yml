@@ -61,12 +61,18 @@ jobs:
         git checkout --detach FETCH_HEAD
         git log --oneline -1
 
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        registry-url: 'https://registry.npmjs.org'
+
     - name: Show tool versions
       run: |
         node --version
         npm --version
         gh --version
-        
+
     - name: Install dependencies
       run: npm ci
       
