@@ -72,7 +72,7 @@ Each repository should contain a `.azure-devops.json` configuration file:
 
 ```bash
 # Install and add to Claude Code MCP
-claude mcp add devops-mcp -- -y @wangkanai/devops-mcp
+claude mcp add devops -- npx -y @wangkanai/devops-mcp
 ```
 
 > **Note**: The `-y` flag automatically accepts the package installation prompt, ensuring smooth non-interactive execution for MCP servers.
@@ -95,33 +95,6 @@ For Claude Desktop users, add this configuration to your MCP settings:
 **Claude Desktop MCP Settings Location:**
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-
-### Alternative Installation Methods
-
-#### Global Installation
-```bash
-# Install globally
-npm install -g @wangkanai/devops-mcp
-
-# Add to Claude Code MCP
-claude mcp add devops-mcp -- devops-mcp
-```
-
-#### Development Installation
-```bash
-# Clone repository
-git clone https://github.com/wangkanai/devops-mcp.git
-cd devops-mcp
-
-# Install dependencies
-npm install
-
-# Build the project
-npm run build
-
-# Start the server
-npm start
-```
 
 ## Development
 
