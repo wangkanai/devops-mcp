@@ -71,9 +71,9 @@
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^24.3.0",
-    "jest": "^30.0.5",
+    "jest": "^30.3.0",
     "nodemon": "^3.1.10",
-    "ts-jest": "^29.4.1",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
   }
