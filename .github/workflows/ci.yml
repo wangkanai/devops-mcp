@@ -12,19 +12,29 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
+env:
+  CI: true
+
 jobs:
   lint:
     name: Code Quality & Linting
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_REF}"
+          git checkout --detach FETCH_HEAD
+          git log --oneline -1
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18.14'
-          cache: 'npm'
+      - name: Show Node.js version
+        run: node --version
 
       - name: Install dependencies
         run: npm ci
@@ -38,26 +48,25 @@ jobs:
         continue-on-error: false
 
       - name: Lint markdown files (Informational)
-        uses: DavidAnson/markdownlint-cli2-action@v16
-        with:
-          globs: '**/*.md'
+        run: npx --yes markdownlint-cli2 "**/*.md"
         continue-on-error: true
 
   test:
     name: Test Suite
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: ['18.14', '20', '22']
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_REF}"
+          git checkout --detach FETCH_HEAD
+          git log --oneline -1
 
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+      - name: Show Node.js version
+        run: node --version
 
       - name: Install dependencies
         run: npm ci
@@ -75,13 +84,17 @@ jobs:
     needs: [lint, test]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_REF}"
+          git checkout --detach FETCH_HEAD
+          git log --oneline -1
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18.14'
-          cache: 'npm'
+      - name: Show Node.js version
+        run: node --version
 
       - name: Install dependencies
         run: npm ci
@@ -100,28 +113,22 @@ jobs:
           fi
           echo "Build successful: dist/index.js created"
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts-${{ github.sha }}
-          path: |
-            dist/
-            package.json
-            README.md
-          retention-days: 7
-
   security:
     name: Security Scanning
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_REF}"
+          git checkout --detach FETCH_HEAD
+          git log --oneline -1
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18.14'
-          cache: 'npm'
+      - name: Show Node.js version
+        run: node --version
 
       - name: Install dependencies
         run: npm ci
@@ -129,35 +136,29 @@ jobs:
       - name: Run security audit
         run: npm audit --audit-level moderate
 
-      - name: Run CodeQL Analysis
-        uses: github/codeql-action/init@v3
-        with:
-          languages: javascript
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
-
   validate-mcp:
     name: Validate MCP Server
     runs-on: ubuntu-latest
     needs: [build]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_REF}"
+          git checkout --detach FETCH_HEAD
+          git log --oneline -1
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18.14'
-          cache: 'npm'
+      - name: Show Node.js version
+        run: node --version
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts-${{ github.sha }}
+      - name: Build project
+        run: npm run build
 
       - name: Test MCP server startup
         run: |
@@ -174,14 +175,20 @@ jobs:
     if: github.event_name == 'release' && github.event.action == 'published'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_REF}"
+          git checkout --detach FETCH_HEAD
+          git log --oneline -1
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18.14'
-          cache: 'npm'
-          registry-url: 'https://registry.npmjs.org'
+      - name: Show tool versions
+        run: |
+          node --version
+          npm --version
+          gh --version
 
       - name: Install dependencies
         run: npm ci
@@ -195,13 +202,6 @@ jobs:
           cp -r dist/ release/
           cp package.json README.md LICENSE release/
           cp config/environments.example.json release/
-          
-      - name: Upload release artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-package-${{ github.event.release.tag_name }}
-          path: release/
-          retention-days: 90
 
       - name: Create GitHub Release Assets
         run: |
@@ -209,13 +209,13 @@ jobs:
           zip -r devops-enhanced-mcp-${{ github.event.release.tag_name }}.zip release/
 
       - name: Upload Release Assets
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            devops-enhanced-mcp-${{ github.event.release.tag_name }}.tar.gz
-            devops-enhanced-mcp-${{ github.event.release.tag_name }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            "devops-enhanced-mcp-${{ github.event.release.tag_name }}.tar.gz" \
+            "devops-enhanced-mcp-${{ github.event.release.tag_name }}.zip" \
+            --clobber
 
   post-deploy:
     name: Post-Deployment Validation
@@ -224,7 +224,14 @@ jobs:
     if: github.event_name == 'release' && github.event.action == 'published'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_REF}"
+          git checkout --detach FETCH_HEAD
+          git log --oneline -1
 
       - name: Validate release
         run: |

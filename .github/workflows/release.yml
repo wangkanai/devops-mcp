@@ -16,6 +16,9 @@ on:
         type: boolean
         default: false
 
+permissions:
+  contents: write
+
 jobs:
   validate-release:
     name: Validate Release
@@ -25,7 +28,14 @@ jobs:
       is-prerelease: ${{ steps.version.outputs.is-prerelease }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_REF}"
+          git checkout --detach FETCH_HEAD
+          git log --oneline -1
 
       - name: Determine version
         id: version
@@ -57,11 +67,8 @@ jobs:
           fi
           echo "✅ Version format valid: $VERSION"
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
+      - name: Show Node.js version
+        run: node --version
 
       - name: Install dependencies
         run: npm ci
@@ -77,20 +84,26 @@ jobs:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     needs: validate-release
-    permissions:
-      contents: write
-      pull-requests: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Fetch full history for changelog
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --tags --prune --depth=100 origin
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            git checkout --detach "origin/${GITHUB_REF_NAME}"
+          else
+            git checkout --detach "${GITHUB_REF}"
+          fi
+          git log --oneline -1
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
+      - name: Show tool versions
+        run: |
+          node --version
+          npm --version
+          gh --version
 
       - name: Install dependencies
         run: npm ci
@@ -221,19 +234,24 @@ jobs:
           sha256sum devops-enhanced-mcp-${VERSION}.zip > devops-enhanced-mcp-${VERSION}.zip.sha256
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ needs.validate-release.outputs.version }}
-          name: Azure DevOps MCP Proxy ${{ needs.validate-release.outputs.version }}
-          body: ${{ steps.changelog.outputs.changelog }}
-          prerelease: ${{ needs.validate-release.outputs.is-prerelease == 'true' }}
-          files: |
-            devops-enhanced-mcp-${{ needs.validate-release.outputs.version }}.tar.gz
-            devops-enhanced-mcp-${{ needs.validate-release.outputs.version }}.zip
-            devops-enhanced-mcp-${{ needs.validate-release.outputs.version }}.tar.gz.sha256
-            devops-enhanced-mcp-${{ needs.validate-release.outputs.version }}.zip.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ needs.validate-release.outputs.version }}"
+          gh release create "$VERSION" \
+            "devops-enhanced-mcp-${VERSION}.tar.gz" \
+            "devops-enhanced-mcp-${VERSION}.zip" \
+            "devops-enhanced-mcp-${VERSION}.tar.gz.sha256" \
+            "devops-enhanced-mcp-${VERSION}.zip.sha256" \
+            --title "Azure DevOps MCP Proxy $VERSION" \
+            --notes-file changelog.md \
+            $([ "${{ needs.validate-release.outputs.is-prerelease }}" = "true" ] && echo "--prerelease") || \
+          gh release upload "$VERSION" \
+            "devops-enhanced-mcp-${VERSION}.tar.gz" \
+            "devops-enhanced-mcp-${VERSION}.zip" \
+            "devops-enhanced-mcp-${VERSION}.tar.gz.sha256" \
+            "devops-enhanced-mcp-${VERSION}.zip.sha256" \
+            --clobber
 
   post-release:
     name: Post-Release Tasks
@@ -241,7 +259,14 @@ jobs:
     needs: [validate-release, create-release]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_REF}"
+          git checkout --detach FETCH_HEAD
+          git log --oneline -1
 
       - name: Update documentation
         run: |

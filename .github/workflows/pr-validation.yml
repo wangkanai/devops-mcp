@@ -30,15 +30,17 @@ jobs:
     if: '!github.event.pull_request.draft'
     steps:
       - name: Checkout PR
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_REF}"
+          git checkout --detach FETCH_HEAD
+          git log --oneline -1
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18.14'
-          cache: 'npm'
+      - name: Show Node.js version
+        run: node --version
 
       - name: Install dependencies
         run: npm ci
@@ -64,15 +66,17 @@ jobs:
     if: '!github.event.pull_request.draft'
     steps:
       - name: Checkout PR
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_REF}"
+          git checkout --detach FETCH_HEAD
+          git log --oneline -1
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18.14'
-          cache: 'npm'
+      - name: Show Node.js version
+        run: node --version
 
       - name: Install dependencies
         run: npm ci
@@ -104,28 +108,30 @@ jobs:
       tests-changed: ${{ steps.changes.outputs.tests }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --no-tags origin \
+            "+refs/heads/${{ github.event.pull_request.base.ref }}:refs/remotes/origin/${{ github.event.pull_request.base.ref }}" \
+            "+${GITHUB_REF}:refs/remotes/origin/pr/${{ github.event.pull_request.number }}"
+          git checkout --detach "refs/remotes/origin/pr/${{ github.event.pull_request.number }}"
+          git log --oneline -1
 
       - name: Detect changes
-        uses: dorny/paths-filter@v2
         id: changes
-        with:
-          filters: |
-            src:
-              - 'src/**'
-              - 'package.json'
-              - 'tsconfig.json'
-            docs:
-              - '**.md'
-              - 'docs/**'
-            config:
-              - 'config/**'
-              - '.github/**'
-            tests:
-              - 'test*.js'
-              - 'tests/**'
+        run: |
+          BASE_REF="origin/${{ github.event.pull_request.base.ref }}"
+          CHANGED_FILES=$(git diff --name-only "$BASE_REF"...HEAD)
+          echo "$CHANGED_FILES"
+          has_match() {
+            printf '%s\n' "$CHANGED_FILES" | rg -q "$1"
+          }
+          if has_match '^(src/|package\.json$|tsconfig\.json$)'; then echo "src=true" >> "$GITHUB_OUTPUT"; else echo "src=false" >> "$GITHUB_OUTPUT"; fi
+          if has_match '(^docs/|\.md$)'; then echo "docs=true" >> "$GITHUB_OUTPUT"; else echo "docs=false" >> "$GITHUB_OUTPUT"; fi
+          if has_match '^(config/|\.github/)'; then echo "config=true" >> "$GITHUB_OUTPUT"; else echo "config=false" >> "$GITHUB_OUTPUT"; fi
+          if has_match '^(tests/|test.*\.js$)'; then echo "tests=true" >> "$GITHUB_OUTPUT"; else echo "tests=false" >> "$GITHUB_OUTPUT"; fi
 
   conditional-tests:
     name: Conditional Tests
@@ -134,15 +140,17 @@ jobs:
     if: needs.changes-detection.outputs.src-changed == 'true'
     steps:
       - name: Checkout PR
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init .
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_REF}"
+          git checkout --detach FETCH_HEAD
+          git log --oneline -1
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18.14'
-          cache: 'npm'
+      - name: Show Node.js version
+        run: node --version
 
       - name: Install dependencies
         run: npm ci

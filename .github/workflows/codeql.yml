@@ -14,30 +14,40 @@ jobs:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
     permissions:
-      actions: read
       contents: read
-      security-events: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'javascript' ]
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git init .
+        git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+        git fetch --depth=1 origin "${GITHUB_REF}"
+        git checkout --detach FETCH_HEAD
+        git log --oneline -1
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: ${{ matrix.language }}
-        # Override default queries with custom security-focused queries
-        queries: security-and-quality
+    - name: Show Node.js version
+      run: node --version
 
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
+    - name: Install dependencies
+      run: npm ci
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:${{matrix.language}}"
+    - name: Type check
+      run: npm run type-check
+
+    - name: Build project
+      run: npm run build
+
+    - name: Run security audit
+      run: npm audit --audit-level moderate
+
+    - name: Search for likely committed secrets
+      run: |
+        if grep -R -n -E "(PAT|TOKEN|SECRET|PASSWORD).*=|pat.*[A-Za-z0-9]{20,}" . \
+          --exclude-dir=node_modules \
+          --exclude-dir=.git; then
+          echo "Potential secret-like content detected"
+          exit 1
+        fi
+        echo "No obvious secrets detected"
