@@ -193,69 +193,61 @@ export class ToolHandlers {
 
   /**
    * Normalize iteration path format for Azure DevOps API compatibility
-   * Format: ProjectName\SprintName (NOT ProjectName\Iteration\SprintName)
-   * Azure DevOps REST API expects direct hierarchy without 'Iteration' component
-   * Fixed TF401347 error by using correct \Iteration\ prefix format
+   * Uses case-insensitive project name comparison (Azure DevOps is case-insensitive)
+   * Does not force \Iteration\ prefix — not all projects have this classification node
+   * Fixed TF401347 error caused by case-sensitive comparison and forced Iteration prefix
    */
   private normalizeIterationPath(iterationPath: string): string {
     // Remove leading/trailing whitespace
     let normalized = iterationPath.trim();
-    
+
     // Convert forward slashes to backslashes for consistency with Azure DevOps
     normalized = normalized.replace(/\//g, '\\');
-    
+
     // Remove leading backslash if present
     if (normalized.startsWith('\\')) {
       normalized = normalized.substring(1);
     }
-    
-    // Handle different input scenarios
+
     const projectName = this.currentConfig!.project;
-    
-    // Case 1: Path starts with project name and has proper Iteration prefix
-    if (normalized.startsWith(`${projectName}\\Iteration\\`)) {
+
+    // Use case-insensitive comparison since Azure DevOps project names are case-insensitive
+    const normalizedLower = normalized.toLowerCase();
+    const projectLower = projectName.toLowerCase();
+
+    // Case 1: Already has project prefix with Iteration component (case-insensitive)
+    if (normalizedLower.startsWith(projectLower + '\\iteration\\')) {
       console.log(`[DEBUG] Path already in correct format with Iteration prefix: ${normalized}`);
       return normalized;
     }
-    
-    // Case 2: Path starts with project but missing Iteration component
-    if (normalized.startsWith(`${projectName}\\`) && !normalized.includes('\\Iteration\\')) {
-      // Insert Iteration component after project name
-      const pathParts = normalized.split('\\');
-      if (pathParts.length >= 2) {
-        pathParts.splice(1, 0, 'Iteration');
-        normalized = pathParts.join('\\');
-        console.log(`[DEBUG] Added Iteration component to path: ${normalized}`);
-        return normalized;
-      }
+
+    // Case 2: Has project prefix without Iteration component (case-insensitive)
+    // e.g., "GSB\Sprint 012" or "gsb\Sprint 012" — return as-is, don't force \Iteration\
+    if (normalizedLower.startsWith(projectLower + '\\')) {
+      console.log(`[DEBUG] Path already has project prefix: ${normalized}`);
+      return normalized;
     }
-    
+
     // Case 3: Has Iteration prefix but missing project name (Iteration\SprintName)
-    if (normalized.startsWith('Iteration\\')) {
+    if (normalizedLower.startsWith('iteration\\')) {
       normalized = `${projectName}\\${normalized}`;
       console.log(`[DEBUG] Added project name prefix to Iteration path: ${normalized}`);
       return normalized;
     }
-    
-    // Case 4: Just the sprint name (SprintName or Sprint 3)
+
+    // Case 4: Just the sprint name (SprintName or Sprint 3) — prefix with project name only
     if (!normalized.includes('\\')) {
-      normalized = `${projectName}\\Iteration\\${normalized}`;
-      console.log(`[DEBUG] Added full project and Iteration prefix to sprint: ${normalized}`);
+      normalized = `${projectName}\\${normalized}`;
+      console.log(`[DEBUG] Added project prefix to sprint: ${normalized}`);
       return normalized;
     }
-    
-    // Case 5: Starts with something else - ensure proper format
-    if (!normalized.startsWith(projectName)) {
-      // Check if it already has an Iteration component
-      if (normalized.includes('\\Iteration\\')) {
-        normalized = `${projectName}\\${normalized}`;
-      } else {
-        // Add both project name and Iteration component
-        normalized = `${projectName}\\Iteration\\${normalized}`;
-      }
-      console.log(`[DEBUG] Added project name prefix with Iteration: ${normalized}`);
+
+    // Case 5: Some other multi-segment path — prefix with project name
+    if (!normalizedLower.startsWith(projectLower)) {
+      normalized = `${projectName}\\${normalized}`;
+      console.log(`[DEBUG] Added project name prefix: ${normalized}`);
     }
-    
+
     console.log(`[DEBUG] Normalized iteration path from '${iterationPath}' to '${normalized}'`);
     return normalized;
   }

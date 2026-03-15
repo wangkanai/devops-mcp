@@ -267,6 +267,64 @@ describe('Iteration Path Handling', () => {
     });
   });
 
+  describe('normalizeIterationPath case-insensitive handling', () => {
+    test('should handle case-insensitive project name match (lowercase config, uppercase input)', () => {
+      const lowercaseConfig: AzureDevOpsConfig = {
+        organizationUrl: 'https://dev.azure.com/test-org',
+        project: 'gsb',
+        pat: 'mock-pat-token'
+      };
+      toolHandlers.setCurrentConfig(lowercaseConfig);
+
+      const result = (toolHandlers as any).normalizeIterationPath('GSB\\Sprint 012');
+      // Should recognize GSB\ as a case-insensitive match and NOT double-prefix
+      expect(result).toBe('GSB\\Sprint 012');
+    });
+
+    test('should handle case-insensitive project name match (uppercase config, lowercase input)', () => {
+      const uppercaseConfig: AzureDevOpsConfig = {
+        organizationUrl: 'https://dev.azure.com/test-org',
+        project: 'GSB',
+        pat: 'mock-pat-token'
+      };
+      toolHandlers.setCurrentConfig(uppercaseConfig);
+
+      const result = (toolHandlers as any).normalizeIterationPath('gsb\\Sprint 012');
+      expect(result).toBe('gsb\\Sprint 012');
+    });
+
+    test('should not force Iteration prefix when path already has project prefix', () => {
+      const result = (toolHandlers as any).normalizeIterationPath('TestProject\\Sprint 1');
+      // Should NOT insert \Iteration\ — return as-is
+      expect(result).toBe('TestProject\\Sprint 1');
+    });
+
+    test('should preserve existing Iteration prefix if already present', () => {
+      const result = (toolHandlers as any).normalizeIterationPath('TestProject\\Iteration\\Sprint 1');
+      expect(result).toBe('TestProject\\Iteration\\Sprint 1');
+    });
+
+    test('should prefix sprint-only input with project name (no Iteration)', () => {
+      const result = (toolHandlers as any).normalizeIterationPath('Sprint 1');
+      expect(result).toBe('TestProject\\Sprint 1');
+    });
+
+    test('should handle forward slashes by converting to backslashes', () => {
+      const result = (toolHandlers as any).normalizeIterationPath('TestProject/Sprint 1');
+      expect(result).toBe('TestProject\\Sprint 1');
+    });
+
+    test('should handle Iteration prefix without project name', () => {
+      const result = (toolHandlers as any).normalizeIterationPath('Iteration\\Sprint 1');
+      expect(result).toBe('TestProject\\Iteration\\Sprint 1');
+    });
+
+    test('should handle case-insensitive Iteration prefix without project name', () => {
+      const result = (toolHandlers as any).normalizeIterationPath('iteration\\Sprint 1');
+      expect(result).toBe('TestProject\\iteration\\Sprint 1');
+    });
+  });
+
   describe('validateIterationPath method', () => {
     test('should validate iteration path using classification nodes', async () => {
       const mockMakeRequest = jest.spyOn(toolHandlers as any, 'makeApiRequest');
