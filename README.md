@@ -96,19 +96,6 @@ For Claude Desktop users, add this configuration to your MCP settings:
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
-## Development
-
-```bash
-# Development mode with auto-reload
-npm run dev
-
-# Type checking
-npm run type-check
-
-# Clean build artifacts
-npm run clean
-```
-
 ## Available Tools
 
 > **📋 For comprehensive command documentation with detailed examples, see [MCP-COMMANDS.md](./MCP-COMMANDS.md)**
