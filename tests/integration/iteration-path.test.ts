@@ -323,6 +323,21 @@ describe('Iteration Path Handling', () => {
       const result = (toolHandlers as any).normalizeIterationPath('iteration\\Sprint 1');
       expect(result).toBe('TestProject\\iteration\\Sprint 1');
     });
+
+    test('should handle multi-segment path without project prefix (Case 5)', () => {
+      const result = (toolHandlers as any).normalizeIterationPath('Team1\\Sprint 1');
+      expect(result).toBe('TestProject\\Team1\\Sprint 1');
+    });
+
+    test('should strip leading backslash before normalizing', () => {
+      const result = (toolHandlers as any).normalizeIterationPath('\\TestProject\\Sprint 1');
+      expect(result).toBe('TestProject\\Sprint 1');
+    });
+
+    test('should handle mixed-case project and Iteration prefix', () => {
+      const result = (toolHandlers as any).normalizeIterationPath('testproject\\ITERATION\\Sprint 1');
+      expect(result).toBe('testproject\\ITERATION\\Sprint 1');
+    });
   });
 
   describe('validateIterationPath method', () => {

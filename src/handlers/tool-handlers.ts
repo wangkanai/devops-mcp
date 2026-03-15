@@ -264,12 +264,14 @@ export class ToolHandlers {
         const classificationNodes = await this.makeApiRequest('/wit/classificationnodes/iterations?api-version=7.1&$depth=10');
         
         const findInNodes = (node: any, targetPath: string): boolean => {
-          // Check current node path
-          if (node.path === targetPath) {
+          const targetLower = targetPath.toLowerCase();
+
+          // Check current node path (case-insensitive)
+          if (node.path?.toLowerCase() === targetLower) {
             console.log(`[DEBUG] Found exact path match: ${node.path}`);
             return true;
           }
-          
+
           // Check alternative path formats (direct hierarchy without Iteration component)
           const alternativePaths = [
             node.path,
@@ -277,10 +279,10 @@ export class ToolHandlers {
             `${this.currentConfig!.project}\\${node.name}`,
             node.structureType === 'iteration' ? node.path : null
           ].filter(Boolean);
-          
+
           for (const altPath of alternativePaths) {
-            if (altPath === targetPath || 
-                altPath?.replace(/\\/g, '/') === targetPath.replace(/\\/g, '/')) {
+            if (altPath?.toLowerCase() === targetLower ||
+                altPath?.replace(/\\/g, '/').toLowerCase() === targetPath.replace(/\\/g, '/').toLowerCase()) {
               console.log(`[DEBUG] Found alternative path match: ${altPath} -> ${targetPath}`);
               return true;
             }
@@ -325,12 +327,16 @@ export class ToolHandlers {
             `${this.currentConfig!.project}/${iteration.name}`
           ].filter(Boolean);
           
-          return possiblePaths.some(path => 
-            path === normalizedPath || 
-            path === iterationPath ||
-            path?.replace(/\\/g, '/') === normalizedPath.replace(/\\/g, '/') ||
-            path?.replace(/\\/g, '/') === iterationPath.replace(/\\/g, '/')
-          );
+          const normalizedLower = normalizedPath.toLowerCase();
+          const iterationLower = iterationPath.toLowerCase();
+          return possiblePaths.some(path => {
+            const pathLower = path?.toLowerCase();
+            const pathSlashLower = path?.replace(/\\/g, '/').toLowerCase();
+            return pathLower === normalizedLower ||
+              pathLower === iterationLower ||
+              pathSlashLower === normalizedPath.replace(/\\/g, '/').toLowerCase() ||
+              pathSlashLower === iterationPath.replace(/\\/g, '/').toLowerCase();
+          });
         });
         
         if (pathExists) {
