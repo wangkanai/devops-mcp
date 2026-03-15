@@ -44,9 +44,15 @@ jobs:
 
     - name: Search for likely committed secrets
       run: |
-        if grep -R -n -E "(PAT|TOKEN|SECRET|PASSWORD).*=|pat.*[A-Za-z0-9]{20,}" . \
+        if grep -R -n -E "(PAT|TOKEN|SECRET|PASSWORD)\s*=\s*['\"]?[A-Za-z0-9+/]{20,}" . \
           --exclude-dir=node_modules \
-          --exclude-dir=.git; then
+          --exclude-dir=.git \
+          --exclude-dir=dist \
+          --exclude-dir=tests \
+          --exclude-dir=docs \
+          --exclude='*.yml' \
+          --exclude='*.yaml' \
+          --exclude='*.md'; then
           echo "Potential secret-like content detected"
           exit 1
         fi

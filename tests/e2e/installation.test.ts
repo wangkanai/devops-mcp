@@ -15,19 +15,8 @@ interface TestResult {
 describe('Installation E2E Tests', () => {
   const TEST_TIMEOUT = 10000; // 10 seconds timeout for each test
 
-  beforeAll(() => {
-    // Ensure the distribution is built before running e2e tests
-    const { execSync } = require('child_process');
-    execSync('npm run build', { stdio: 'inherit' });
-    
-    // Ensure the built file has execute permissions
-    const fs = require('fs');
-    const path = require('path');
-    const distPath = path.join(__dirname, '..', '..', 'dist', 'index.js');
-    if (fs.existsSync(distPath)) {
-      execSync(`chmod +x "${distPath}"`, { stdio: 'inherit' });
-    }
-  });
+  // Build is handled by jest.globalSetup.js to avoid race conditions
+  // when parallel workers each try to build (prebuild does rm -rf dist)
 
   const testNpxExecution = (command: string, args: string[], testName: string): Promise<TestResult> => {
     return new Promise((resolve) => {
